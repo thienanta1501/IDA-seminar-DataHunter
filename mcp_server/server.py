@@ -8,6 +8,7 @@ from chart.piechart import PieChart
 from chart.barhorizontalchart import BarhChart
 from chart.stackplotchart import StackPlotChart
 from chart.violinchart import ViolinPlotChart
+from chart.scatterchart import ScatterChart
 import io
 
 mcp = FastMCP("Thanh server")
@@ -234,6 +235,31 @@ def draw_violinplot_chart(category: dict, title: str = "", x_label: str = "", y_
 
     return buf.read()
 
+
+@mcp.tool()
+def draw_scatter_chart(x_data: list, y_data: list, title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue") -> str:
+    """
+    Generate a scatter chart from the given data and return it as a PNG byte string.
+
+    Parameters:
+        x_data (list): A list of categories or labels for the x-axis.
+        y_data (list): A list of numerical values corresponding to each x-axis label.
+        title (str): The title of the chart (default is an empty string).
+        x_label (str): The label for the x-axis (default is an empty string).
+        y_label (str): The label for the y-axis (default is an empty string).
+        color (str): The color of the points in the chart (default is "skyblue").
+
+    Returns:
+        str: A base64-encoded PNG image of the generated scatter chart.
+    """
+    scatter_chart_object = ScatterChart(title=title, x_label=x_label, y_label=y_label, color=color)
+    fig = scatter_chart_object.create_chart(x_data, y_data)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+
+    return buf.read()
 
 if __name__ == "__main__":
     # Register the service with the server
