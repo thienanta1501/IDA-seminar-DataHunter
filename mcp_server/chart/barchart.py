@@ -38,11 +38,24 @@ class BarChart:
                     label=key)
             ax.set_xticks(x)   
             ax.set_xticklabels(x_data)
+        elif self.type == "stacked":
+            x = np.arange(len(x_data))
+            bottom = np.zeros(len(x_data))
+
+            for category in keys_of_dict:
+                values = np.array(y_data[category])
+                ax.bar(x, values, bottom=bottom, label=category)
+                bottom += values
+
+            ax.set_xticks(x)
+            ax.set_xticklabels(x_data)
+
         
 
         
         ax.set_title(self.title)
         ax.set_xlabel(self.x_label)
         ax.set_ylabel(self.y_label)
+        ax.legend()
 
         return fig
