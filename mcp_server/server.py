@@ -14,22 +14,24 @@ import io
 mcp = FastMCP("Thanh server")
 
 @mcp.tool()
-def draw_bar_chart(x_data: list, y_data: list, title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue") -> str:
+def draw_bar_chart(x_data: list, y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
+                   type: str = "simple") -> str:
     """
     Generate a bar chart from the given data and return it as a PNG byte string.
 
     Parameters:
         x_data (list): A list of categories or labels for the x-axis.
-        y_data (list): A list of numerical values corresponding to each x-axis label.
+        y_data (dict[str, list]): A dictionary where keys are labels and values are lists of numerical values.
         title (str): The title of the chart (default is an empty string).
         x_label (str): The label for the x-axis (default is an empty string).
         y_label (str): The label for the y-axis (default is an empty string).
         color (str): The color of the bars in the chart (default is "skyblue").
+        type (str): The type of bar chart to create ("simple" or "grouped"). If "grouped", y_data should be a list of lists.
 
     Returns:
         str: A base64-encoded PNG image of the generated bar chart.
     """
-    bar_chart_object = BarChart(title = title, x_label = x_label, y_label = y_label, color = color)
+    bar_chart_object = BarChart(title = title, x_label = x_label, y_label = y_label, color = color, type = type)
     fig = bar_chart_object.create_chart(x_data, y_data)
 
     buf = io.BytesIO()

@@ -489,6 +489,7 @@ dependencies = [
     { name = "dotenv" },
     { name = "matplotlib" },
     { name = "mcp", extra = ["cli"] },
+    { name = "numpy" },
     { name = "psycopg2-binary" },
     { name = "sqlalchemy" },
 ]
@@ -498,6 +499,7 @@ requires-dist = [
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "matplotlib", specifier = ">=3.10.1" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.6.0" },
+    { name = "numpy", specifier = ">=2.2.4" },
     { name = "psycopg2-binary", specifier = ">=2.9.10" },
     { name = "sqlalchemy", specifier = ">=2.0.40" },
 ]
