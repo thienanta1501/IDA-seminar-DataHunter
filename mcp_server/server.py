@@ -26,7 +26,7 @@ def draw_bar_chart(x_data: list, y_data: dict[str, list], title: str = "", x_lab
         x_label (str): The label for the x-axis (default is an empty string).
         y_label (str): The label for the y-axis (default is an empty string).
         color (str): The color of the bars in the chart (default is "skyblue").
-        type (str): The type of bar chart to create ("simple" or "grouped"). If "grouped", y_data should be a list of lists.
+        type (str): The type of bar chart to create ("simple", "grouped" or "stacked"). If "grouped" or "stacked", y_data should be a list of lists.
 
     Returns:
         str: A base64-encoded PNG image of the generated bar chart.
