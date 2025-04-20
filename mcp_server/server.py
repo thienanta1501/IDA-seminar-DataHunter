@@ -239,7 +239,7 @@ def draw_violinplot_chart(category: dict, title: str = "", x_label: str = "", y_
 
 
 @mcp.tool()
-def draw_scatter_chart(x_data: list, y_data: list, title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue") -> str:
+def draw_scatter_chart(x_data: list, y_data: list, title: str = "", x_label: str = "", y_label: str = "", colors: list[str] = None, sizes: list = None) -> str:
     """
     Generate a scatter chart from the given data and return it as a PNG byte string.
 
@@ -249,13 +249,13 @@ def draw_scatter_chart(x_data: list, y_data: list, title: str = "", x_label: str
         title (str): The title of the chart (default is an empty string).
         x_label (str): The label for the x-axis (default is an empty string).
         y_label (str): The label for the y-axis (default is an empty string).
-        color (str): The color of the points in the chart (default is "skyblue").
-
+        colors (list): A list of colors for each point in the scatter chart.
+        sizes (list): A list of sizes for each point in the scatter chart.
     Returns:
         str: A base64-encoded PNG image of the generated scatter chart.
     """
-    scatter_chart_object = ScatterChart(title=title, x_label=x_label, y_label=y_label, color=color)
-    fig = scatter_chart_object.create_chart(x_data, y_data)
+    scatter_chart_object = ScatterChart(title=title, x_label=x_label, y_label=y_label)
+    fig = scatter_chart_object.create_chart(x_data, y_data, colors = colors, sizes = sizes)
 
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
