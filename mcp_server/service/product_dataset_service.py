@@ -51,7 +51,8 @@ def update_product(product_id: str, update_data: dict) -> dict:
 
     session.commit()
     session.close()
-    return True
+    
+    return removeUnnecessaryFieldFromDict(product.__dict__, ["_sa_instance_state"])
 
 def delete_product(product_id: str) -> bool:
     """Delete a prodcut"""
