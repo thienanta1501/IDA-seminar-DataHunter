@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import os
 from PIL import Image
-from test_mcp_server import ask_agent
+from test_mcp_server import ask_agent, parse_json_from_draw_bar_chart_response
 import asyncio
-
+import io
 
 # Thêm CSS để tùy chỉnh chiều rộng của sidebar
 st.markdown(
@@ -55,6 +55,9 @@ if "chart_files" not in st.session_state:
 
 if "table_files" not in st.session_state:
     st.session_state.table_files = [f for f in os.listdir(table_dir) if f.endswith(".csv")]
+
+if "latest_image_buffer" not in st.session_state:
+    st.session_state.latest_image_buffer = None
 
 # --- Tab: Biểu đồ ---
 if tab_selection == "Biểu đồ":
@@ -114,9 +117,50 @@ def run_async(func, *args):
     asyncio.set_event_loop(loop)
     return loop.run_until_complete(func(*args))
 
+# if user_input:
+#     bot_response = run_async(ask_agent, user_input)
+
+#     st.session_state.chat_history.append((user_input, bot_response))
+#     st.chat_message("user").write(user_input)
+#     st.chat_message("assistant").write(bot_response)
+
+# if user_input:
+#     bot_response = run_async(ask_agent, user_input)
+#     st.session_state.chat_history.append((user_input, bot_response))
+#     st.chat_message("user").write(user_input)
+#     print("bot_response type:", type(bot_response))
+#     print("bot_response:", bot_response)
+
+#     if "b'" in bot_response:  
+#         image_buffer = parse_json_from_draw_bar_chart_response(bot_response)
+#         st.session_state.latest_image_buffer = image_buffer
+#         st.chat_message("assistant").write("Biểu đồ của bạn đã sẵn sàng 👇")
+#         st.image(image_buffer, caption="📊 Biểu đồ", use_column_width=True)
+#         image_buffer.seek(0)
+#         st.download_button("⬇️ Tải biểu đồ", image_buffer, file_name="generated_chart.png", mime="image/png")
+#     else:
+#         st.chat_message("assistant").write(bot_response)
+
 if user_input:
     bot_response = run_async(ask_agent, user_input)
-
     st.session_state.chat_history.append((user_input, bot_response))
     st.chat_message("user").write(user_input)
-    st.chat_message("assistant").write(bot_response)
+
+    if isinstance(bot_response, Image.Image):
+        st.chat_message("assistant").write("📊 Biểu đồ của bạn:")
+        st.image(bot_response, use_column_width=True)
+
+        image_buffer = io.BytesIO()
+        bot_response.save(image_buffer, format="PNG")
+        image_buffer.seek(0)
+        st.download_button("⬇️ Tải biểu đồ", image_buffer, file_name="chart.png", mime="image/png")
+    
+    elif isinstance(bot_response, pd.DataFrame):
+        st.chat_message("assistant").write("📋 Bảng dữ liệu của bạn:")
+        st.dataframe(bot_response)
+    
+    else:
+        st.chat_message("assistant").write(str(bot_response))
+
+
+    #st.chat_message("assistant").write(bot_response)

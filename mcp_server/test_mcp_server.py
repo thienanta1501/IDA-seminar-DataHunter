@@ -39,7 +39,6 @@ def parse_json_from_get_all_orders_response(json_string):
 def parse_json_from_draw_bar_chart_response(json_string):
     image_bytes = ast.literal_eval(json_string)
     image = Image.open(io.BytesIO(image_bytes))
-    image.show()
     return image
 
 def parse_json_from_get_column_from_dataset_response(json_string):
@@ -83,6 +82,7 @@ async def ask_agent(message: str):
 
             if tool_name in parse_type_mapping:
                 parse_function = parse_type_mapping[tool_name]
-                parse_function(tool_message.content)
+                image_buffer = parse_function(tool_message.content)
+                return image_buffer
             else:
                 print(f"No parse function for {tool_name}")
