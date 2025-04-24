@@ -75,7 +75,10 @@ async def ask_agent(message: str):
             ms.pretty_print()
         print(len(tool_messages))
 
-        print(response['messages'][-1])
+
+        print(response['messages'][-1].content)
+        final_response = response['messages'][-1].content
+
         for tool_message in tool_messages:
             tool_name = tool_message.name
             print("Tool name: ", tool_name)
@@ -83,6 +86,9 @@ async def ask_agent(message: str):
             if tool_name in parse_type_mapping:
                 parse_function = parse_type_mapping[tool_name]
                 image_buffer = parse_function(tool_message.content)
-                return image_buffer
+                return image_buffer, final_response
             else:
                 print(f"No parse function for {tool_name}")
+                
+            
+        return None, final_response
