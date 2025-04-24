@@ -33,7 +33,7 @@ def parse_json_from_get_all_orders_response(json_string):
     result = [json.loads(item) for item in dict_list]
     return result
 
-def parse_json_from_draw_bar_chart_response(json_string):
+def parse_json_from_image_response(json_string):
     image_bytes = ast.literal_eval(json_string)
     image = Image.open(io.BytesIO(image_bytes))
     image.show()
@@ -100,9 +100,15 @@ async def main():
         # for ms in response["messages"]:
         #     ms.pretty_print()
 
-        # print("Response: ", response['messages'][-1])
-        # tools = client.get_tools()
-        # print(tools[3].args_schema)
+        for tool_msg in tool_messages:
+            name = tool_msg.name
+            content = tool_msg.content
+
+            if name in parse_type_mapping:
+                parse_func = parse_type_mapping[name]
+                parse_func(content)
+            else:
+                print("Do not have valid parse function")
 
 
 if __name__ == "__main__":
