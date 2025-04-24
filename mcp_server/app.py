@@ -39,60 +39,60 @@ def check_for_changes(directory, key):
 
 # --- Sidebar Tabs ---
 st.sidebar.title("📊 Kết quả phân tích")
-tab_selection = st.sidebar.radio("Chọn tab", options=["Biểu đồ", "Bảng dữ liệu"])
+tab_selection = st.sidebar.radio("Chọn nội dung muốn hiển thị", options=["Biểu đồ", "Bảng dữ liệu"])
 
-# --- Đường dẫn thư mục chứa file ---
-chart_dir = "charts_data"
-table_dir = "tables_data"
+# Nút Reload Sidebar
+if "sidebar_updated" not in st.session_state:
+    st.session_state.sidebar_updated = False
 
-# Đảm bảo thư mục tồn tại
-os.makedirs(chart_dir, exist_ok=True)
-os.makedirs(table_dir, exist_ok=True)
-
-# --- Lưu trữ danh sách file trong session state ---
-if "chart_files" not in st.session_state:
-    st.session_state.chart_files = [f for f in os.listdir(chart_dir) if f.endswith((".png", ".jpg"))]
-
-if "table_files" not in st.session_state:
-    st.session_state.table_files = [f for f in os.listdir(table_dir) if f.endswith(".csv")]
-
-if "latest_image_buffer" not in st.session_state:
-    st.session_state.latest_image_buffer = None
+if st.sidebar.button("🔄 Làm mới Sidebar"):
+    st.session_state.sidebar_updated = True  # Đặt cờ để làm mới sidebar
 
 # --- Tab: Biểu đồ ---
 if tab_selection == "Biểu đồ":
-    if check_for_changes(chart_dir, "chart_files"):
-        st.session_state.chart_files = [f for f in os.listdir(chart_dir) if f.endswith((".png", ".jpg"))]
+        
+    if "chart_data" in st.session_state and st.session_state.chart_data:
+            st.sidebar.subheader("📈 Danh sách biểu đồ")
+            for idx, chart in enumerate(st.session_state.chart_data):
+                st.sidebar.image(chart, use_container_width=True, caption=f"Biểu đồ {idx + 1}")
 
-    if st.session_state.chart_files:
-        st.sidebar.subheader("📈 Danh sách biểu đồ")
-        for chart_file in st.session_state.chart_files:
-            st.sidebar.markdown(f"**🖼 {chart_file}**")
-            image = Image.open(os.path.join(chart_dir, chart_file))
-            st.sidebar.image(image, use_container_width=True)
+                 # Tạo buffer để lưu hình ảnh tạm thời
+                image_buffer = io.BytesIO()
+                chart.save(image_buffer, format="PNG")
+                image_buffer.seek(0)
 
-            with open(os.path.join(chart_dir, chart_file), "rb") as img_file:
-                st.sidebar.download_button("⬇️ Tải biểu đồ", img_file, file_name=chart_file)
+                # Thêm nút tải xuống dưới mỗi hình ảnh
+                st.sidebar.download_button(
+                    label=f"⬇️ Tải biểu đồ {idx + 1}",
+                    data=image_buffer,
+                    file_name=f"chart_{idx + 1}.png",
+                    mime="image/png"
+                )
     else:
         st.sidebar.info("📭 Chưa có biểu đồ nào. Gửi yêu cầu để tạo biểu đồ!")
 
 # --- Tab: Bảng dữ liệu ---
 elif tab_selection == "Bảng dữ liệu":
-    # Kiểm tra thay đổi trong thư mục
-    if check_for_changes(table_dir, "table_files"):
-        st.session_state.table_files = [f for f in os.listdir(table_dir) if f.endswith(".csv")]
 
-    # Hiển thị danh sách bảng dữ liệu
-    if st.session_state.table_files:
+    if "table_data" in st.session_state and st.session_state.table_data:
         st.sidebar.subheader("📋 Danh sách bảng dữ liệu")
-        for table_file in st.session_state.table_files:
-            st.sidebar.markdown(f"**📄 {table_file}**")
-            # Sử dụng st.cache_data để tránh tải lại không cần thiết
-            df = load_dataframe(os.path.join(table_dir, table_file))
-            st.sidebar.dataframe(df.head(10))  # Hiển thị tối đa 10 dòng
+        for idx, table in enumerate(st.session_state.table_data):
+            st.sidebar.write(f"*Bảng {idx + 1}*")
+            st.sidebar.dataframe(table)
+            
+        # Tạo buffer để lưu bảng dữ liệu tạm thời dưới dạng CSV
+        csv_buffer = io.StringIO()
+        table.to_csv(csv_buffer, index=False)
+        csv_buffer.seek(0)
 
-            with open(os.path.join(table_dir, table_file), "rb") as csv_file:
-                st.sidebar.download_button("⬇️ Tải bảng", csv_file, file_name=table_file)
+        # Thêm nút tải xuống dưới mỗi bảng dữ liệu
+        st.sidebar.download_button(
+            label=f"⬇️ Tải bảng {idx + 1}",
+            data=csv_buffer,
+            file_name=f"table_{idx + 1}.csv",
+            mime="text/csv"
+        )
+
     else:
         st.sidebar.info("📭 Chưa có bảng dữ liệu nào. Gửi yêu cầu để sinh dữ liệu!")
 
@@ -100,14 +100,53 @@ elif tab_selection == "Bảng dữ liệu":
 st.image("logo.png", width=350)
 st.write("Nhập câu hỏi hoặc yêu cầu của bạn vào khung bên dưới:")
 
+# Khung chat user và bot
+def display_message(message, sender):
+    if sender == "user":
+        st.markdown(
+        f"""
+        <div style="display: flex; justify-content: flex-end; align-items: flex-start; margin-bottom: 10px;">
+            <div style="background-color: #A5BFCC; padding: 10px; border-radius: 10px; max-width: 70%;">
+                <strong>You:</strong><br>{message}
+            </div>
+            <div style="margin-left: 10px;font-size: 40px">            
+                🧑‍💻
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+        f"""
+        <div style="display: flex; justify-content: flex-start; align-items: flex-start; margin-bottom: 10px;">
+            <div style="margin-right: 10px; font-size: 40px">
+                👾
+            </div>
+            <div style="background-color: #A5BFCC; padding: 10px; border-radius: 10px; max-width: 70%;">
+                <strong>Assistant:</strong><br>{message}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+        )
+
 # Lưu trữ lịch sử chat
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
 # Hiển thị các đoạn chat cũ
-for user, bot in st.session_state.chat_history:
-    st.chat_message("user").write(user)
-    st.chat_message("assistant").write(bot)
+for user, bot, bot_mess in st.session_state.chat_history:
+    # Tin nhắn của người dùng (bên phải)
+    display_message(user, "user")
+    # Tin nhắn của bot (bên trái)
+    if isinstance(bot, Image.Image):
+        display_message("📊 Biểu đồ của bạn:", "bot")
+        st.image(bot, use_container_width=True)
+    # else:
+    #     display_message(bot, "bot")
+    display_message(bot_mess, "bot")
+
 
 # Input người dùng
 user_input = st.chat_input("Nhập yêu cầu ở đây")
@@ -117,50 +156,49 @@ def run_async(func, *args):
     asyncio.set_event_loop(loop)
     return loop.run_until_complete(func(*args))
 
-# if user_input:
-#     bot_response = run_async(ask_agent, user_input)
-
-#     st.session_state.chat_history.append((user_input, bot_response))
-#     st.chat_message("user").write(user_input)
-#     st.chat_message("assistant").write(bot_response)
-
-# if user_input:
-#     bot_response = run_async(ask_agent, user_input)
-#     st.session_state.chat_history.append((user_input, bot_response))
-#     st.chat_message("user").write(user_input)
-#     print("bot_response type:", type(bot_response))
-#     print("bot_response:", bot_response)
-
-#     if "b'" in bot_response:  
-#         image_buffer = parse_json_from_draw_bar_chart_response(bot_response)
-#         st.session_state.latest_image_buffer = image_buffer
-#         st.chat_message("assistant").write("Biểu đồ của bạn đã sẵn sàng 👇")
-#         st.image(image_buffer, caption="📊 Biểu đồ", use_column_width=True)
-#         image_buffer.seek(0)
-#         st.download_button("⬇️ Tải biểu đồ", image_buffer, file_name="generated_chart.png", mime="image/png")
-#     else:
-#         st.chat_message("assistant").write(bot_response)
 
 if user_input:
-    bot_response = run_async(ask_agent, user_input)
-    st.session_state.chat_history.append((user_input, bot_response))
-    st.chat_message("user").write(user_input)
+    # respone = run_async(ask_agent, user_input)
+    # if respone == 2:
+    #     bot_response, bot_message = respone
+    # else:
+    #     bot_response = None
+    #     bot_message = respone
+    bot_response, bot_message = run_async(ask_agent, user_input)
+
+    st.session_state.chat_history.append((user_input, bot_response, bot_message))
+    #st.chat_message("user").write(user_input)
+    display_message(user_input, "user")
 
     if isinstance(bot_response, Image.Image):
-        st.chat_message("assistant").write("📊 Biểu đồ của bạn:")
-        st.image(bot_response, use_column_width=True)
+        #st.chat_message("assistant").write("📊 Biểu đồ của bạn:")
+        display_message("📊 Biểu đồ của bạn:", "bot")
+        st.image(bot_response, use_container_width=True)
+
+        # Lưu hình ảnh vào session_state
+        if "chart_data" not in st.session_state:
+            st.session_state.chart_data = []
+        st.session_state.chart_data.append(bot_response)
 
         image_buffer = io.BytesIO()
         bot_response.save(image_buffer, format="PNG")
         image_buffer.seek(0)
-        st.download_button("⬇️ Tải biểu đồ", image_buffer, file_name="chart.png", mime="image/png")
+        #st.download_button("⬇️ Tải biểu đồ", image_buffer, file_name="chart.png", mime="image/png")
     
     elif isinstance(bot_response, pd.DataFrame):
         st.chat_message("assistant").write("📋 Bảng dữ liệu của bạn:")
         st.dataframe(bot_response)
+
+        # Lưu bảng dữ liệu vào session_state
+        if "table_data" not in st.session_state:
+            st.session_state.table_data = []
+        st.session_state.table_data.append(bot_response)
     
-    else:
-        st.chat_message("assistant").write(str(bot_response))
+    # else:
+    #     display_message(bot_response, "bot")
+    display_message(bot_message, "bot")
 
 
-    #st.chat_message("assistant").write(bot_response)
+# Reset trạng thái sidebar_updated sau khi xử lý
+if st.session_state.sidebar_updated:
+    st.session_state.sidebar_updated = False
