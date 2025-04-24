@@ -9,7 +9,7 @@ class DistributionChart:
         self.color = color
         self.bins = bins
         self.alpha = alpha
-        self.category = category  # Dict[str, list] nếu nhiều nhóm
+        self.category = category  
         self.density = density
         self.histtype = histtype
         self.stacked = stacked

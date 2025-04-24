@@ -4,7 +4,7 @@ class BoxPlotChart:
     def __init__(self, title="", x_label="", y_label="", notch=False, vert=True,
                  patch_artist=True, boxprops=None, medianprops=None, flierprops=None,
                  whiskerprops=None, capprops=None, showmeans=False, meanprops=None,
-                 widths=None, positions=None, labels=None, showcaps=True, showbox=True,
+                 widths=None, positions=None, showcaps=True, showbox=True,
                  showfliers=True):
         self.title = title
         self.x_label = x_label
@@ -21,7 +21,6 @@ class BoxPlotChart:
         self.meanprops = meanprops or {}
         self.widths = widths
         self.positions = positions
-        self.labels = labels
         self.showcaps = showcaps
         self.showbox = showbox
         self.showfliers = showfliers
@@ -29,14 +28,16 @@ class BoxPlotChart:
     def create_chart(self, data):
         fig, ax = plt.subplots()
 
+        labels = list(data.keys())
+        data_values = list(data.values())
+
         bp = ax.boxplot(
-            data,
+            data_values,
             notch=self.notch,
             vert=self.vert,
             patch_artist=self.patch_artist,
             widths=self.widths,
             positions=self.positions,
-            labels=self.labels,
             showmeans=self.showmeans,
             showcaps=self.showcaps,
             showbox=self.showbox,
@@ -47,6 +48,7 @@ class BoxPlotChart:
             whiskerprops=self.whiskerprops,
             capprops=self.capprops,
             meanprops=self.meanprops,
+            labels=labels  # tự lấy từ dict key
         )
 
         ax.set_title(self.title)
