@@ -95,8 +95,9 @@ def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: s
     Generate a boxplot chart from the given data and return it as a base64-encoded PNG string.
 
     Parameters:
-        data (list of lists): A list of lists where each sublist represents a group of numeric values for the boxplot.
-        title (str): The title of the chart.
+        data (Dict[str, List[float]]): A dictionary where each key is a label (str) for a data group, 
+        and the value is a list of float numbers representing the numeric values in that group.
+        Each key corresponds to one box in the boxplot.
         x_label (str): The label for the x-axis.
         y_label (str): The label for the y-axis.
         notch (bool): Whether to draw a notch in the boxplot (default is False).
@@ -116,7 +117,7 @@ def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: s
         title=title, x_label=x_label, y_label=y_label,
         notch=notch, vert=vert, showmeans=showmeans,
         showcaps=showcaps, showbox=showbox, showfliers=showfliers,
-        widths=widths, positions=positions, labels=labels
+        widths=widths, positions=positions
     )
     fig = chart.create_chart(data)
 
@@ -255,11 +256,11 @@ def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = Non
 def draw_scatter_chart(
     x: List[float],
     y: List[float],
-    s: List[float] = [],
-    c: List[Union[float, str]] = [],
+    s: Union[float, List[float]] = 20.0,  # Kích thước điểm, có thể là scalar hoặc array
+    c: Union[float, str, List[Union[float, str]]]=[],  # Màu sắc điểm, có thể là scalar, string hoặc list
     marker: str = 'o',
     cmap: str = "",
-    norm = None,  # ← Thêm dòng này lại
+    norm = None,
     vmin: float = 0.0,
     vmax: float = 1.0,
     alpha: float = 1.0,
@@ -275,7 +276,7 @@ def draw_scatter_chart(
     Parameters:
         x (List[float]): X-axis values of the scatter points.
         y (List[float]): Y-axis values of the scatter points.
-        s (List[float], optional): Sizes of each point.
+        s (float or List[float], optional): Size of points. Either a scalar or a list with the same length as x/y.
         c (List[float] or List[str], optional): Colors of each point (numeric or string colors).
         marker (str): Style of point markers (default: 'o').
         cmap (str or Colormap, optional): Colormap used if `c` is numeric.
@@ -292,6 +293,20 @@ def draw_scatter_chart(
     Returns:
         str: Base64-encoded PNG image of the scatter plot.
     """
+    # Ensure `s` is either a scalar or a list with the same length as x and y
+    if isinstance(s, float):
+        s = [s] * len(x)
+    
+    # Ensure `c` is either a list with the same length as x and y, or a valid color string
+    if isinstance(c, (float, str)):  # If `c` is scalar or string, repeat for all points
+        c = [c] * len(x)
+    elif isinstance(c, list) and len(c) != len(x):  # If list, check length consistency
+        if len(c) == 0:  # If `c` is an empty list, use default color
+            c = ['blue'] * len(x)
+        else:
+            raise ValueError("The length of `c` must be the same as the length of `x` and `y`.")
+
+    # Create the scatter plot chart
     chart = ScatterChart(
         x=x,
         y=y,
@@ -310,11 +325,13 @@ def draw_scatter_chart(
         title=title
     )
 
+    # Generate the plot and save it to a buffer
     fig = chart.create_chart()
-
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
+
+    # Return the base64-encoded PNG image as a string
     return buf.read()
 
 @mcp.tool()

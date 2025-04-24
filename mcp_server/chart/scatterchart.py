@@ -31,9 +31,9 @@ class ScatterChart:
 
         # Create scatter plot
         scatter = ax.scatter(self.x, self.y, s=self.s, c=c, marker=self.marker, cmap=self.cmap, 
-                             norm=self.norm, vmin=self.vmin, vmax=self.vmax, alpha=self.alpha,
-                             linewidths=self.linewidths, edgecolors=self.edgecolors, 
-                             plotnonfinite=self.plotnonfinite, **self.kwargs)
+                            norm=self.norm, vmin=self.vmin, vmax=self.vmax, alpha=self.alpha,
+                            linewidths=self.linewidths, edgecolors=self.edgecolors, 
+                            plotnonfinite=self.plotnonfinite, **self.kwargs)
         
         # Set the title if provided
         if self.title:

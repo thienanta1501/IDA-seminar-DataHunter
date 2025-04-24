@@ -34,7 +34,7 @@ class DistributionChart:
 
             ax.hist(group_data,
                     bins=self.bins,
-                    color=group_colors,
+                    #color=group_colors,
                     label=group_labels,
                     alpha=self.alpha,
                     density=self.density,
