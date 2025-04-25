@@ -19,19 +19,36 @@ mcp = FastMCP("Thanh server")
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
                    type: str = "simple") -> str:
     """
-    Generate a bar chart from the given data and return it as a PNG byte string.
+    Generate a bar chart from the given data and return it as a base64-encoded PNG string.
 
-    Parameters:
-        x_data (list): A list of categories or labels for the x-axis.
-        y_data (dict[str, list]): A dictionary where keys are labels and values are lists of numerical values.
-        title (str): The title of the chart (default is an empty string).
-        x_label (str): The label for the x-axis (default is an empty string).
-        y_label (str): The label for the y-axis (default is an empty string).
-        color (str): The color of the bars in the chart (default is "skyblue").
-        type (str): The type of bar chart to create ("simple", "grouped" or "stacked"). If "grouped" or "stacked", y_data should be a list of lists.
+    Parameters
+    ----------
+    x_data : list
+        A list of categories or labels for the x-axis.
+    y_data : dict[str, list]
+        A dictionary where:
+            - Keys are series labels (e.g., "Sales Q1", "Sales Q2").
+            - Values are lists of numerical values corresponding to each category in `x_data`.
+    title : str, optional
+        Title of the chart (default is an empty string).
+    x_label : str, optional
+        Label for the x-axis (default is an empty string).
+    y_label : str, optional
+        Label for the y-axis (default is an empty string).
+    color : str, optional
+        Color of the bars (default is "skyblue").
+    type : str, optional
+        Type of bar chart to create. Supported values:
+            - "simple": A standard bar chart.
+            - "grouped": A grouped bar chart (requires at least two series in `y_data`).
+            - "stacked": A stacked bar chart (requires at least two series in `y_data`).
+        If `y_data` contains multiple series and `type` is not specified, type must be assigned stacked by default.
+        To draw a stacked bar chart, explicitly set `type="stacked"`.
 
-    Returns:
-        str: A base64-encoded PNG image of the generated bar chart.
+    Returns
+    -------
+    str
+        A base64-encoded PNG image of the generated bar chart.
     """
     bar_chart_object = BarChart(title = title, x_label = x_label, y_label = y_label, color = color, type = type)
     fig = bar_chart_object.create_chart(x_data, y_data)

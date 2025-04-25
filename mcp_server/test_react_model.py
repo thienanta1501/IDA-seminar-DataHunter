@@ -64,21 +64,25 @@ async def main():
             }
         }
     ) as client:
-        agent = create_react_agent(model, client.get_tools())
-        message = "draw chart to compare the frequency of each order status value in the order_dataset table"
+        agent = create_react_agent(model, tools=client.get_tools())
+        message = "draw stacked bar chart to compare price and length of kia morning and lambogini, where price of kia morning is 100 and price of lambogini is 1000\
+             and length of kia morning is 50 and length of lambogini is 20. Add title and axis name to the chart"
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
-
-
-        # tool_messages = [msg for msg in response['messages'] if isinstance(msg, ToolMessage)]
+        for msg in response["messages"]:
+            msg.pretty_print()
+        tool_messages = [msg for msg in response["messages"] if isinstance(msg, ToolMessage)]
         
-        
-        # for ms in response["messages"]:
-        #     ms.pretty_print()
 
-        # print("Response: ", response['messages'][-1])
-        # tools = client.get_tools()
-        # print(tools[3].args_schema)
+        for tool_msg in tool_messages:
+            name = tool_msg.name
+            content = tool_msg.content
+
+            if name in parse_type_mapping:
+                parse_func = parse_type_mapping[name]
+                parse_func(content)
+            else:
+                print("Do not have valid parse function")
 
 
 
