@@ -80,9 +80,7 @@ async def main():
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
 
-        message = "Draw line chart to show speed of growth economic of two company by years 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 \
-            where first company data is: 289, 274, 150, 463, 154, 343, 419, 230, 406, 234, 120 \
-            and second company data is: 528, 366, 473, 587, 288, 515, 213, 441, 464, 545, 252. Automatically name title and axis name to the chart"
+        message = "Draw a pie chart to represent the proportions of economic sectors in Vietnam's economy, given that industry accounts for 50%, agriculture for 30%, and handicrafts for 20%."
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
         for msg in response["messages"]:

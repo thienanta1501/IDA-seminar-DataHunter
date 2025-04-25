@@ -8,7 +8,7 @@ class PieChart:
         self.explode = explode
         self.labels = labels
         self.colors = colors
-        self.autopct = autopct
+        self.autopct = '%1.1f%%' if autopct is None else autopct
         self.pctdistance = pctdistance
         self.shadow = shadow
         self.labeldistance = labeldistance
@@ -27,7 +27,7 @@ class PieChart:
     def create_chart(self, x):
         fig, ax = plt.subplots()
 
-        ax.pie(
+        wedges, texts, autotexts = ax.pie(
             x,
             explode=self.explode,
             labels=self.labels,
@@ -47,6 +47,9 @@ class PieChart:
             normalize=self.normalize,
             hatch=self.hatch
         )
+
+        for autotext in autotexts:
+            autotext.set_color('white')
 
         ax.set_title(self.title)
         return fig
