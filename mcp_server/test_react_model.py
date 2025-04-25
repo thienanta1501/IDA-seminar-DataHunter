@@ -33,7 +33,7 @@ def parse_json_from_get_all_orders_response(json_string):
     result = [json.loads(item) for item in dict_list]
     return result
 
-def parse_json_from_draw_bar_chart_response(json_string):
+def parse_json_from_image_response(json_string):
     image_bytes = ast.literal_eval(json_string)
     image = Image.open(io.BytesIO(image_bytes))
     image.show()
@@ -46,8 +46,9 @@ def parse_json_from_get_column_from_dataset_response(json_string):
 
 parse_type_mapping = {
     "get_all_orders": parse_json_from_get_all_orders_response,
-    "draw_bar_chart": parse_json_from_draw_bar_chart_response,
-    "get_column_from_dataset": parse_json_from_get_column_from_dataset_response
+    "draw_bar_chart": parse_json_from_image_response,
+    "get_column_from_dataset": parse_json_from_get_column_from_dataset_response,
+    "draw_barh_chart": parse_json_from_image_response
 }
 
 async def main():
@@ -65,7 +66,7 @@ async def main():
         }
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
-        message = "draw stacked bar chart to compare price and length of kia morning and lambogini, where price of kia morning is 100 and price of lambogini is 1000\
+        message = "draw bar chart to compare price and length of kia morning and lambogini, where price of kia morning is 100 and price of lambogini is 1000\
              and length of kia morning is 50 and length of lambogini is 20. Add title and axis name to the chart"
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
