@@ -190,36 +190,47 @@ def draw_distribution_chart(category: Optional[Dict[str, List[Union[int, float]]
     return buf.read()
 
 @mcp.tool()
-def draw_line_chart(x: List[Union[int, float]], y: List[Union[int, float]], title: str = "", x_label: str = "", y_label: str = "",
+def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
                     linestyle: str = "-", linewidth: float = 2, marker: Optional[str] = None,
-                    color: Optional[str] = None, scalex: bool = True, scaley: bool = True,
-                    label: Optional[str] = None) -> str:
+                    color: Optional[str] = None, scalex: bool = True, scaley: bool = True) -> str:
     """
-    Generate a line chart from the given x and y data and return it as a PNG byte string.
+    Draws a multi-line chart using the given x-axis values and multiple y-axis data series,
+    and returns the chart image as a PNG binary string.
 
-    Parameters:
-        x (list): A list of numerical values for the x-axis.
-        y (list): A list of numerical values for the y-axis.
-        title (str): The title of the chart (default is an empty string).
-        x_label (str): The label for the x-axis (default is an empty string).
-        y_label (str): The label for the y-axis (default is an empty string).
-        linestyle (str): The style of the line (default is solid line, "-").
-        linewidth (float): The thickness of the line (default is 2).
-        marker (Optional[str]): The marker to use for data points (default is None).
-        color (Optional[str]): The color of the line (default is None, which uses the default color).
-        scalex (bool): Whether to scale the x-axis (default is True).
-        scaley (bool): Whether to scale the y-axis (default is True).
-        label (Optional[str]): The label for the legend (default is None).
+    Args:
+        x_data (List[Union[str, int, float]]): 
+            Values for the x-axis (shared by all lines).
+        y_data (Dict[Union[str], List[Union[float, int]]]): 
+            Dictionary mapping labels to y-axis values for each line to be plotted.
+            Each key is a line label, and each value is a list of y-values corresponding to x_data.
+        title (str, optional): 
+            Title of the chart.
+        x_label (str, optional): 
+            Label for the x-axis.
+        y_label (str, optional): 
+            Label for the y-axis.
+        linestyle (str, optional): 
+            Line style (default is '-', a solid line).
+        linewidth (float, optional): 
+            Width of the lines.
+        marker (Optional[str], optional): 
+            Marker style for data points (e.g., 'o', 's', '^').
+        color (Optional[str], optional): 
+            Color or list of colors for each line.
+        scalex (bool, optional): 
+            Whether to auto-scale the x-axis.
+        scaley (bool, optional): 
+            Whether to auto-scale the y-axis.
 
     Returns:
-        str: A base64-encoded PNG image of the generated line chart.
+        str: A binary string representing the chart image in PNG format.
     """
     chart = LineChart(
         title=title, x_label=x_label, y_label=y_label,
         linestyle=linestyle, linewidth=linewidth, marker=marker,
-        color=color, scalex=scalex, scaley=scaley, label=label
+        color=color, scalex=scalex, scaley=scaley
     )
-    fig = chart.create_chart(x, y)
+    fig = chart.create_chart(x_data=x_data, y_data=y_data)
 
     buf = io.BytesIO()
     fig.savefig(buf, format="png")

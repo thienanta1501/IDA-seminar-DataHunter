@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
+from itertools import cycle
 
 class LineChart:
     def __init__(self, title="", x_label="", y_label="",
                  linestyle='-', linewidth=2, marker=None, color=None,
-                 scalex=True, scaley=True, label=None):
+                 scalex=True, scaley=True):
         self.title = title
         self.x_label = x_label
         self.y_label = y_label
@@ -13,27 +14,21 @@ class LineChart:
         self.color = color
         self.scalex = scalex
         self.scaley = scaley
-        self.label = label
 
-    def create_chart(self, x, y):
+    def create_chart(self, x_data: list, y_data: dict):
         fig, ax = plt.subplots()
+        labels = list(y_data.keys())
 
-        ax.plot(
-            x, y,
-            linestyle=self.linestyle,
-            linewidth=self.linewidth,
-            marker=self.marker,
-            color=self.color,
-            scalex=self.scalex,
-            scaley=self.scaley,
-            label=self.label
-        )
+        colors = cycle(['b', 'g', 'r', 'c', 'm', 'y', 'k']) 
+
+        for label in labels:
+            ax.plot(x_data, y_data[label], label = label, color=next(colors))
 
         ax.set_title(self.title)
         ax.set_xlabel(self.x_label)
         ax.set_ylabel(self.y_label)
 
-        if self.label:
+        if len(labels) > 1:
             ax.legend()
 
         return fig

@@ -78,9 +78,11 @@ async def main():
             }
         }
     ) as client:
-        agent = create_react_agent(model, client.get_tools())
+        agent = create_react_agent(model, tools=client.get_tools())
 
-        message = "draw scatter plot chart of the following data. X is [1, 2, 3, 4]. Y is [4, 6, 2, 1]"
+        message = "Draw line chart to show speed of growth economic of two company by years 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020 \
+            where first company data is: 289, 274, 150, 463, 154, 343, 419, 230, 406, 234, 120 \
+            and second company data is: 528, 366, 473, 587, 288, 515, 213, 441, 464, 545, 252. Automatically name title and axis name to the chart"
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
         for msg in response["messages"]:
@@ -95,20 +97,6 @@ async def main():
             if tool_name in parse_type_mapping:
                 parse_function = parse_type_mapping[tool_name]
                 parse_data = parse_function(content)
-                
-
-        # for ms in response["messages"]:
-        #     ms.pretty_print()
-
-        for tool_msg in tool_messages:
-            name = tool_msg.name
-            content = tool_msg.content
-
-            if name in parse_type_mapping:
-                parse_func = parse_type_mapping[name]
-                parse_func(content)
-            else:
-                print("Do not have valid parse function")
 
 
 if __name__ == "__main__":
