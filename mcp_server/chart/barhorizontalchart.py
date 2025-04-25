@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+import numpy as np
 class BarhChart:
     def __init__(self, title="", x_label="", y_label="", color="blue",
                  width=0.8, left=None, align='center', type="simple"):
@@ -19,19 +19,8 @@ class BarhChart:
         if not keys:
             raise ValueError("x_data_dict must contain at least one data series.")
 
-        # Simple horizontal bar
-        if self.type == "simple":
-            ax.barh(
-                y=y_data_labels,
-                width=x_data_dict[keys[0]],
-                color=self.color,
-                height=self.width,
-                left=self.left,
-                align=self.align
-            )
-
         # Grouped horizontal bar chart
-        elif self.type == "grouped":
+        if self.type == "grouped" or (len(list(x_data_dict.keys())) > 1 and self.type == "simple"):
             num_series = len(keys)
             y = np.arange(len(y_data_labels))
             bar_height = self.width / num_series
@@ -47,6 +36,17 @@ class BarhChart:
 
             ax.set_yticks(y)
             ax.set_yticklabels(y_data_labels)
+
+        # Simple horizontal bar
+        elif self.type == "simple":
+            ax.barh(
+                y=y_data_labels,
+                width=x_data_dict[keys[0]],
+                color=self.color,
+                height=self.width,
+                left=self.left,
+                align=self.align
+            )
 
         # Stacked horizontal bar chart
         elif self.type == "stacked":
@@ -65,9 +65,6 @@ class BarhChart:
 
             ax.set_yticks(y)
             ax.set_yticklabels(y_data_labels)
-
-        else:
-            raise ValueError(f"Unsupported chart type: {self.type}")
 
         # Common chart settings
         ax.set_title(self.title)

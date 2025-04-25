@@ -59,40 +59,44 @@ def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list]
     return buf.read()
 
 @mcp.tool()
-def draw_barh_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
+def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
                    type: str = "simple") -> str:
     """
-    Generate a bar horizontal chart from the given data and return it as a base64-encoded PNG string.
+    Generate a horizontal bar chart and return it as a PNG byte string.
+
+    This function uses the BarhChart class to generate a horizontal bar chart based on the given data.
+    It supports "simple", "grouped", and "stacked" chart types.
 
     Parameters
     ----------
-    x_data : list
-        A list of categories or labels for the x-axis.
-    y_data : dict[str, list]
-        A dictionary where:
-            - Keys are series labels (e.g., "Sales Q1", "Sales Q2").
-            - Values are lists of numerical values corresponding to each category in `x_data`.
+    y_data : list of str | int | float
+        A list of labels for the y-axis categories (e.g., names, groups, etc.).
+    x_data : dict of str -> list of float
+        A dictionary where keys are data series labels and values are lists of numerical values
+        corresponding to each y-axis label in `y_data`.
     title : str, optional
-        Title of the chart (default is an empty string).
+        The title of the chart (default is an empty string).
     x_label : str, optional
-        Label for the x-axis (default is an empty string).
+        The label for the x-axis (default is an empty string).
     y_label : str, optional
-        Label for the y-axis (default is an empty string).
+        The label for the y-axis (default is an empty string).
     color : str, optional
-        Color of the bars (default is "skyblue").
+        The default color for bars (only applies to "simple" charts). Default is "skyblue".
     type : str, optional
-        Type of bar chart to create. Supported values:
-            - "simple": A standard bar chart.
-            - "grouped": A grouped bar chart (requires at least two series in `y_data`).
-            - "stacked": A stacked bar chart (requires at least two series in `y_data`).
+        Type of bar chart to draw. One of:
+            - "simple": A basic horizontal bar chart using the first series in `x_data`.
+            - "grouped": Displays bars for each series side by side.
+            - "stacked": Stacks values of all series on the same bar.
+        Default is "simple".
 
     Returns
     -------
     str
-        A base64-encoded PNG image of the generated bar chart.
+        A PNG image of the chart encoded as a byte string.
     """
+
     bar_chart_object = BarhChart(title = title, x_label = x_label, y_label = y_label, color = color, type = type)
-    fig = bar_chart_object.create_chart(x_data, y_data)
+    fig = bar_chart_object.create_chart(y_data_labels=y_data, x_data_dict=x_data)
 
     buf = io.BytesIO()
     fig.savefig(buf, format='png')

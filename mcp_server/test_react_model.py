@@ -66,7 +66,7 @@ async def main():
         }
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
-        message = "draw bar chart to compare price and length of kia morning and lambogini, where price of kia morning is 100 and price of lambogini is 1000\
+        message = "draw stacked bar horizontal chart to compare price and length of kia morning and lambogini, where price of kia morning is 100 and price of lambogini is 1000\
              and length of kia morning is 50 and length of lambogini is 20. Add title and axis name to the chart"
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
