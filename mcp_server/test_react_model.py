@@ -9,11 +9,21 @@ from PIL import Image
 import io
 from langchain_core.messages.tool import ToolMessage
 import json
+import requests
 
 
 load_dotenv()
 model_name = os.getenv("MODEL_NAME")
 print("Model: ", model_name)
+
+def get_image_from_url(image_url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.0.0 Safari/537.36"
+    }
+    response = requests.get(image_url, headers=headers)
+    image = Image.open(io.BytesIO(response.content))
+    image.show()
+
 
 def print_stream(stream):
     for s in stream:
@@ -87,16 +97,15 @@ async def main():
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
 
-        message = f"Draw a fill-between-x chart with y = [0, 1, 2, 3, 4], x1 = [1, 2, 3, 4, 5], and x2 = [0, 1, 1, 2, 2]. Fill color should be green with 60% opacity and add the title 'Difference between X1 and X2'."
-
-
+        message = "Draw a grouped bar chart to compare number of goals and assistes of messi and ronaldo, where messi scored 98 goals and ronaldo scored 100 goals \
+            and messi assisted 100 and ronaldo assisted 98"
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
         for msg in response["messages"]:
             msg.pretty_print()
 
         tool_messages = [msg for msg in response['messages'] if isinstance(msg, ToolMessage)]
-        print(tool_messages)
+
         for msg in tool_messages:
             tool_name = msg.name
     
