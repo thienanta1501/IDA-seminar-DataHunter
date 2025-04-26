@@ -60,8 +60,15 @@ parse_type_mapping = {
     "draw_pie_chart": parse_json_from_image,
     "draw_scatter_chart": parse_json_from_image,
     "draw_stackplot_chart": parse_json_from_image,
-    "draw_violinplot_chart": parse_json_from_image
-    
+    "draw_violinplot_chart": parse_json_from_image,
+    "draw_step_chart": parse_json_from_image,
+    "draw_fill_between_chart": parse_json_from_image,
+    "draw_fill_betweenx_chart": parse_json_from_image,
+    "draw_error_bar_chart": parse_json_from_image,
+    "draw_stem_chart": parse_json_from_image,
+    "draw_quiver_chart": parse_json_from_image,
+    "draw_polar_chart": parse_json_from_image,
+    "draw_arrow_chart": parse_json_from_image
 }
 
 async def main():
@@ -80,7 +87,9 @@ async def main():
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
 
-        message = "Draw a pie chart to represent the proportions of economic sectors in Vietnam's economy, given that industry accounts for 50%, agriculture for 30%, and handicrafts for 20%."
+        message = f"Draw a fill-between-x chart with y = [0, 1, 2, 3, 4], x1 = [1, 2, 3, 4, 5], and x2 = [0, 1, 1, 2, 2]. Fill color should be green with 60% opacity and add the title 'Difference between X1 and X2'."
+
+
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
         for msg in response["messages"]:

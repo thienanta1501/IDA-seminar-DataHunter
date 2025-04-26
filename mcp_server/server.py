@@ -1,19 +1,73 @@
 from mcp.server.fastmcp import FastMCP
 from service.order_dataset_service import get_all_orders as service_get_all_orders
+from chart.arrowchart import ArrowChart
 from chart.barchart import BarChart
-from chart.linechart import LineChart
-from chart.distributionchart import DistributionChart
-from chart.boxplotchart import BoxPlotChart
-from chart.piechart import PieChart
 from chart.barhorizontalchart import BarhChart
-from chart.stackplotchart import StackPlotChart
-from chart.violinchart import ViolinPlotChart
+from chart.boxplotchart import BoxPlotChart
+from chart.distributionchart import DistributionChart
+from chart.errorbarchart import ErrorBarChart
+from chart.fillbetweenchart import FillBetweenChart
+from chart.fillbetweenxchart import FillBetweenXChart
+from chart.linechart import LineChart
+from chart.piechart import PieChart
+from chart.polarchart import PolarChart
+from chart.quiverchart import QuiverChart
 from chart.scatterchart import ScatterChart
+from chart.stackplotchart import StackPlotChart
+from chart.stemchart import StemChart
+from chart.stepchart import StepChart
+from chart.violinchart import ViolinPlotChart
+
 import io
 from typing import List, Union, Optional, Dict, Tuple, Callable
 import matplotlib.colors as mcolors
+import numpy as np
 
 mcp = FastMCP("Thanh server")
+
+@mcp.tool()
+def draw_arrow_chart(x: float, y: float, dx: float, dy: float,
+                     title: str = "", x_label: str = "", y_label: str = "",
+                     color: str = "blue", width: float = 0.01,
+                     head_width: float = 0.05, head_length: float = 0.1,
+                     length_includes_head: bool = True) -> str:
+    """
+    Generate a chart with an arrow and return it as a base64-encoded PNG string.
+    
+    Parameters
+    ----------
+    x, y : float
+        Starting point of the arrow.
+    dx, dy : float
+        Direction and length of the arrow.
+    title, x_label, y_label : str, optional
+        Title and axis labels for the chart.
+    color : str, optional
+        Arrow color.
+    width : float, optional
+        Width of the arrow body.
+    head_width : float, optional
+        Width of the arrow head.
+    head_length : float, optional
+        Length of the arrow head.
+    length_includes_head : bool, optional
+        Whether the head length is included in total arrow length.
+
+    Returns
+    -------
+    str
+        A base64-encoded PNG image of the arrow chart.
+    """
+    chart = ArrowChart(title=title, x_label=x_label, y_label=y_label,
+                       color=color, width=width,
+                       head_width=head_width, head_length=head_length,
+                       length_includes_head=length_includes_head)
+    fig = chart.create_chart(x, y, dx, dy)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
 
 @mcp.tool()
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
@@ -190,6 +244,97 @@ def draw_distribution_chart(category: Optional[Dict[str, List[Union[int, float]]
     return buf.read()
 
 @mcp.tool()
+def draw_error_bar_chart(x_data: List[Union[int, float]],
+                         y_data: List[Union[int, float]],
+                         yerr: Optional[Union[float, List[float]]] = None,
+                         xerr: Optional[Union[float, List[float]]] = None,
+                         title: str = "", x_label: str = "", y_label: str = "",
+                         fmt: str = "o", color: Optional[str] = None, ecolor: Optional[str] = None,
+                         elinewidth: Optional[float] = None, capsize: Optional[float] = None,
+                         barsabove: bool = False, errorevery: int = 1,
+                         capthick: Optional[float] = None) -> str:
+    """
+    Generate an error bar chart and return it as a base64-encoded PNG string.
+    """
+    chart = ErrorBarChart(title=title, x_label=x_label, y_label=y_label,
+                          fmt=fmt, color=color, ecolor=ecolor,
+                          elinewidth=elinewidth, capsize=capsize,
+                          barsabove=barsabove, errorevery=errorevery,
+                          capthick=capthick)
+    fig = chart.create_chart(x_data, y_data, yerr, xerr)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@mcp.tool()
+def draw_fill_between_chart(x_data: List[Union[str, int, float]],
+                            y1_data: List[Union[int, float]],
+                            y2_data: Union[List[Union[int, float]], int, float] = 0,
+                            where: Optional[List[bool]] = None,
+                            title: str = "", x_label: str = "", y_label: str = "",
+                            color: str = "blue", alpha: float = 0.5,
+                            step: Optional[str] = None, interpolate: bool = False) -> str:
+    """
+    Generate a fill-between chart using matplotlib and return it as a base64-encoded PNG string.
+    """
+    chart = FillBetweenChart(title=title, x_label=x_label, y_label=y_label, color=color,
+                             alpha=alpha, step=step, interpolate=interpolate)
+    fig = chart.create_chart(x_data, y1_data, y2_data, where)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@mcp.tool()
+def draw_fill_betweenx_chart(y: List[Union[int, float]],
+                             x1: List[Union[int, float]],
+                             x2: Union[List[Union[int, float]], float] = 0,
+                             where: Union[List[bool], None] = None,
+                             title: str = "", x_label: str = "", y_label: str = "",
+                             color: str = "blue", alpha: float = 0.5,
+                             step: str = None, interpolate: bool = False) -> str:
+    """
+    Generate a filled area chart between two x-values over the y-axis and return it as a base64-encoded PNG string.
+
+    Parameters
+    ----------
+    y : list
+        Y-axis values.
+    x1 : list
+        First set of x-values (left or right edge).
+    x2 : list or float, optional
+        Second set of x-values (default is 0).
+    where : list of bool, optional
+        Condition to apply fill (e.g. x1 > x2).
+    title, x_label, y_label : str
+        Chart title and axis labels.
+    color : str, optional
+        Fill color.
+    alpha : float, optional
+        Transparency of the fill.
+    step : str, optional
+        Step fill direction: 'pre', 'mid', or 'post'.
+    interpolate : bool, optional
+        Whether to interpolate when using `where`.
+
+    Returns
+    -------
+    str
+        A base64-encoded PNG image.
+    """
+    chart = FillBetweenXChart(title=title, x_label=x_label, y_label=y_label,
+                              color=color, alpha=alpha, step=step, interpolate=interpolate)
+    fig = chart.create_chart(y=y, x1=x1, x2=x2, where=where)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@mcp.tool()
 def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
                     linestyle: str = "-", linewidth: float = 2, marker: Optional[str] = None,
                     color: Optional[str] = None, scalex: bool = True, scaley: bool = True) -> str:
@@ -275,6 +420,80 @@ def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = Non
     )
 
     fig = chart.create_chart(x)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@mcp.tool()
+def draw_polar_chart(theta_data: List[Union[int, float]], r_data: List[Union[int, float]],
+                     title: str = "", color: str = "blue", linewidth: float = 1.5) -> str:
+    """
+    Generate a polar chart from the given data and return it as a base64-encoded PNG string.
+
+    Parameters
+    ----------
+    theta_data : list
+        A list of angles in radians (the x-axis values in polar coordinates).
+    r_data : list
+        A list of radial values (the y-axis values in polar coordinates).
+    title : str, optional
+        Title of the chart (default is an empty string).
+    color : str, optional
+        Line color (default is "blue").
+    linewidth : float, optional
+        Line width (default is 1.5).
+
+    Returns
+    -------
+    str
+        A base64-encoded PNG image of the generated polar chart.
+    """
+    chart = PolarChart(title=title, color=color, linewidth=linewidth)
+    fig = chart.create_chart(theta_data, r_data)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@mcp.tool()
+def draw_quiver_chart(x_data: List[Union[int, float]], y_data: List[Union[int, float]],
+                      u_data: List[Union[int, float]], v_data: List[Union[int, float]],
+                      title: str = "", x_label: str = "", y_label: str = "",
+                      color: str = "blue", scale: float = 1.0) -> str:
+    """
+    Generate a quiver chart from the given data and return it as a base64-encoded PNG string.
+
+    Parameters
+    ----------
+    x_data : list
+        A list of x-axis values.
+    y_data : list
+        A list of y-axis values.
+    u_data : list
+        The x-components of the vectors.
+    v_data : list
+        The y-components of the vectors.
+    title : str, optional
+        Title of the chart (default is an empty string).
+    x_label : str, optional
+        Label for the x-axis (default is an empty string).
+    y_label : str, optional
+        Label for the y-axis (default is an empty string).
+    color : str, optional
+        Color of the vectors (default is "blue").
+    scale : float, optional
+        Scaling factor for the vectors (default is 1.0).
+
+    Returns
+    -------
+    str
+        A base64-encoded PNG image of the generated quiver chart.
+    """
+    chart = QuiverChart(title=title, x_label=x_label, y_label=y_label, color=color, scale=scale)
+    fig = chart.create_chart(x_data, y_data, u_data, v_data)
 
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
@@ -396,6 +615,97 @@ def draw_stackplot_chart(category: Dict[str, List[Union[int, float]]],
     fig.savefig(buf, format='png')
     buf.seek(0)
 
+    return buf.read()
+
+@mcp.tool()
+def draw_stem_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int, float]],
+                    title: str = "", x_label: str = "", y_label: str = "",
+                    linefmt: str = "C0-", markerfmt: str = "C0o", basefmt: str = "k-",
+                    bottom: float = 0, orientation: str = "vertical") -> str:
+    """
+    Generate a stem chart from the given data and return it as a base64-encoded PNG string.
+
+    Parameters
+    ----------
+    x_data : list
+        A list of x-axis values.
+    y_data : list
+        A list of y-axis values corresponding to each x-axis value.
+    title : str, optional
+        Title of the chart.
+    x_label : str, optional
+        Label for the x-axis.
+    y_label : str, optional
+        Label for the y-axis.
+    linefmt : str, optional
+        Format string for the stem lines (default "C0-").
+    markerfmt : str, optional
+        Format string for the markers (default "C0o").
+    basefmt : str, optional
+        Format string for the baseline (default "k-").
+    bottom : float, optional
+        The bottom value of the stems (default 0).
+    orientation : str, optional
+        "vertical" or "horizontal" (default "vertical").
+
+    Returns
+    -------
+    str
+        A base64-encoded PNG image of the generated stem chart.
+    """
+    chart = StemChart(title=title, x_label=x_label, y_label=y_label,
+                      linefmt=linefmt, markerfmt=markerfmt, basefmt=basefmt,
+                      bottom=bottom, orientation=orientation)
+    fig = chart.create_chart(x_data, y_data)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf.read()
+
+@mcp.tool()
+def draw_step_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int, float]],
+                    title: str = "", x_label: str = "", y_label: str = "",
+                    color: str = "blue", linestyle: str = "-", marker: str = "",
+                    linewidth: float = 1.5, where: str = "pre") -> str:
+    """
+    Generate a step chart from the given data and return it as a base64-encoded PNG string.
+
+    Parameters
+    ----------
+    x_data : list
+        A list of x-axis values (usually time or steps).
+    y_data : list
+        A list of y-axis values corresponding to each x-axis value.
+    title : str, optional
+        Title of the chart (default is an empty string).
+    x_label : str, optional
+        Label for the x-axis (default is an empty string).
+    y_label : str, optional
+        Label for the y-axis (default is an empty string).
+    color : str, optional
+        Line color (default is "blue").
+    linestyle : str, optional
+        Line style (default is "-").
+    marker : str, optional
+        Marker style for the data points (default is none).
+    linewidth : float, optional
+        Line width (default is 1.5).
+    where : str, optional
+        Positioning of the step: "pre", "post", or "mid" (default is "pre").
+
+    Returns
+    -------
+    str
+        A base64-encoded PNG image of the generated step chart.
+    """
+    chart = StepChart(title=title, x_label=x_label, y_label=y_label, color=color,
+                      linestyle=linestyle, marker=marker, linewidth=linewidth, where=where)
+    fig = chart.create_chart(x_data, y_data)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
     return buf.read()
 
 @mcp.tool()
