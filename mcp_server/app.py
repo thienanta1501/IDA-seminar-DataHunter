@@ -43,27 +43,28 @@ if "sidebar_updated" not in st.session_state:
     st.session_state.sidebar_updated = False
 
 if st.sidebar.button("🔄 Làm mới Sidebar"):
-    st.session_state.sidebar_updated = True
+    st.session_state.sidebar_updated = True  # Đặt cờ để làm mới sidebar
 
 # --- Tab: Biểu đồ ---
 if tab_selection == "Biểu đồ":
+        
     if "chart_data" in st.session_state and st.session_state.chart_data:
-        st.sidebar.subheader("📈 Danh sách biểu đồ")
-        for idx, chart in enumerate(st.session_state.chart_data):
-            st.sidebar.image(chart, use_container_width=True, caption=f"Biểu đồ {idx + 1}")
-            
-            # Tạo buffer để lưu tạm hình ảnh
-            image_buffer = io.BytesIO()
-            chart.save(image_buffer, format="PNG")
-            image_buffer.seek(0)
+            st.sidebar.subheader("📈 Danh sách biểu đồ")
+            for idx, chart in enumerate(st.session_state.chart_data):
+                st.sidebar.image(chart, use_container_width=True, caption=f"Biểu đồ {idx + 1}")
 
-            # Nút tải biểu đồ
-            st.sidebar.download_button(
-                label=f"⬇️ Tải biểu đồ {idx + 1}",
-                data=image_buffer,
-                file_name=f"chart_{idx + 1}.png",
-                mime="image/png"
-            )
+                 # Tạo buffer để lưu hình ảnh tạm thời
+                image_buffer = io.BytesIO()
+                chart.save(image_buffer, format="PNG")
+                image_buffer.seek(0)
+
+                # Thêm nút tải xuống dưới mỗi hình ảnh
+                st.sidebar.download_button(
+                    label=f"⬇️ Tải biểu đồ {idx + 1}",
+                    data=image_buffer,
+                    file_name=f"chart_{idx + 1}.png",
+                    mime="image/png"
+                )
     else:
         st.sidebar.info("📭 Chưa có biểu đồ nào. Gửi yêu cầu để tạo biểu đồ!")
 
