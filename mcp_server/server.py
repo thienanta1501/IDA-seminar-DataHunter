@@ -11,7 +11,15 @@ from chart.violinchart import ViolinPlotChart
 from chart.scatterchart import ScatterChart
 import io
 from typing import List, Union, Optional, Dict, Tuple, Callable
+import os
+from dotenv import load_dotenv
 import matplotlib.colors as mcolors
+from utils.index import upload_image_to_imgur
+
+load_dotenv()
+
+client_id = os.getenv("CLIENT_ID")
+image_host_url = os.getenv("IMAGE_HOST_SERVER_URL")
 
 mcp = FastMCP("Thanh server")
 
@@ -19,44 +27,54 @@ mcp = FastMCP("Thanh server")
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
                    type: str = "simple") -> str:
     """
-    Generate a bar chart from the given data and return it as a base64-encoded PNG string.
+    Draws a bar chart based on the provided data and returns the image as a hosted URL.
 
     Parameters
     ----------
-    x_data : list
-        A list of categories or labels for the x-axis.
+    x_data : list of str | int | float
+        A list of category labels for the x-axis.
+
     y_data : dict[str, list]
-        A dictionary where:
-            - Keys are series labels (e.g., "Sales Q1", "Sales Q2").
-            - Values are lists of numerical values corresponding to each category in `x_data`.
+        A dictionary containing one or more data series:
+            - Keys are the series names (e.g., "Revenue", "Profit").
+            - Values are lists of numerical values aligned with `x_data`.
+
     title : str, optional
-        Title of the chart (default is an empty string).
+        The title of the chart. Default is an empty string.
+
     x_label : str, optional
-        Label for the x-axis (default is an empty string).
+        The label for the x-axis. Default is an empty string.
+
     y_label : str, optional
-        Label for the y-axis (default is an empty string).
+        The label for the y-axis. Default is an empty string.
+
     color : str, optional
-        Color of the bars (default is "skyblue").
+        The color of the bars. Applies only to simple charts or all series if using a single color. Default is "skyblue".
+
     type : str, optional
-        Type of bar chart to create. Supported values:
-            - "simple": A standard bar chart.
-            - "grouped": A grouped bar chart (requires at least two series in `y_data`).
-            - "stacked": A stacked bar chart (requires at least two series in `y_data`).
-        If `y_data` contains multiple series and `type` is not specified, type must be assigned stacked by default.
-        To draw a stacked bar chart, explicitly set `type="stacked"`.
+        The type of bar chart to create. Options include:
+            - "simple": A basic single-series bar chart.
+            - "grouped": A grouped bar chart for comparing multiple series side-by-side.
+            - "stacked": A stacked bar chart combining multiple series.
+        If multiple series are provided and `type` is not explicitly set, it defaults to "stacked".
 
     Returns
     -------
     str
-        A base64-encoded PNG image of the generated bar chart.
+        A URL string linking to the generated bar chart image hosted online.
     """
+
     bar_chart_object = BarChart(title = title, x_label = x_label, y_label = y_label, color = color, type = type)
     fig = bar_chart_object.create_chart(x_data, y_data)
 
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
+
 
 @mcp.tool()
 def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
@@ -92,7 +110,7 @@ def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str, list
     Returns
     -------
     str
-        A PNG image of the chart encoded as a byte string.
+        A URL string linking to the generated bar horizontal chart image hosted online.
     """
 
     bar_chart_object = BarhChart(title = title, x_label = x_label, y_label = y_label, color = color, type = type)
@@ -101,7 +119,10 @@ def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str, list
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: str = "", y_label: str = "",
@@ -129,7 +150,7 @@ def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: s
         labels (Optional[List[str]]): Labels for each group in the boxplot (default is None).
 
     Returns:
-        str: A base64-encoded PNG image of the generated boxplot.
+        A URL string linking to the generated boxplot image hosted online.
     """
     chart = BoxPlotChart(
         title=title, x_label=x_label, y_label=y_label,
@@ -142,7 +163,10 @@ def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: s
     buf = io.BytesIO()
     fig.savefig(buf, format="png")
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_distribution_chart(category: Optional[Dict[str, List[Union[int, float]]]] = None, 
@@ -166,7 +190,7 @@ def draw_distribution_chart(category: Optional[Dict[str, List[Union[int, float]]
         stacked (bool): Whether the bars should be stacked (default is False).
 
     Returns:
-        str: A base64-encoded PNG image of the generated histogram.
+        A URL string linking to the generated distribution chart image hosted online.
     """
     if category:
         chart = DistributionChart(
@@ -187,7 +211,10 @@ def draw_distribution_chart(category: Optional[Dict[str, List[Union[int, float]]
     fig.savefig(buf, format='png')
     buf.seek(0)
 
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
@@ -223,7 +250,7 @@ def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[st
             Whether to auto-scale the y-axis.
 
     Returns:
-        str: A binary string representing the chart image in PNG format.
+        A URL string linking to the generated line chart image hosted online.
     """
     chart = LineChart(
         title=title, x_label=x_label, y_label=y_label,
@@ -235,7 +262,10 @@ def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[st
     buf = io.BytesIO()
     fig.savefig(buf, format="png")
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = None, explode: Optional[List[float]] = None,
@@ -265,7 +295,7 @@ def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = Non
         title (str): The title of the pie chart (default is "").
 
     Returns:
-        str: A base64-encoded PNG image of the pie chart.
+        A URL string linking to the generated pie chart image hosted online.
     """
     chart = PieChart(
         explode=explode, labels=labels, colors=colors, autopct=autopct, pctdistance=pctdistance,
@@ -279,7 +309,10 @@ def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = Non
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_scatter_chart(
@@ -320,7 +353,7 @@ def draw_scatter_chart(
         title (str): Title of the chart.
 
     Returns:
-        str: Base64-encoded PNG image of the scatter plot.
+        A URL string linking to the generated scatter chart image hosted online.
     """
     # Ensure `s` is either a scalar or a list with the same length as x and y
     if isinstance(s, float):
@@ -361,7 +394,10 @@ def draw_scatter_chart(
     buf.seek(0)
 
     # Return the base64-encoded PNG image as a string
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_stackplot_chart(category: Dict[str, List[Union[int, float]]],
@@ -386,7 +422,7 @@ def draw_stackplot_chart(category: Dict[str, List[Union[int, float]]],
         hatch (list, optional): List of hatch patterns for each area fill (default is None).
 
     Returns:
-        str: A base64-encoded PNG image of the stacked area chart.
+        A URL string linking to the generated stackplot chart image hosted online.
     """
     chart = StackPlotChart(title=title, x_label=x_label, y_label=y_label,
                            colors=colors, baseline=baseline, hatch=hatch, category=category)
@@ -396,7 +432,10 @@ def draw_stackplot_chart(category: Dict[str, List[Union[int, float]]],
     fig.savefig(buf, format='png')
     buf.seek(0)
 
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_violinplot_chart(category: Dict[str, List[Union[int, float]]],
@@ -431,7 +470,7 @@ def draw_violinplot_chart(category: Dict[str, List[Union[int, float]]],
         side (str): "both", "left", or "right" (only applies to horizontal plots in some backends).
 
     Returns:
-        str: A base64-encoded PNG image of the violin plot.
+        A URL string linking to the generated violin plot chart image hosted online.
     """
     chart = ViolinPlotChart(
         title=title,
@@ -455,7 +494,10 @@ def draw_violinplot_chart(category: Dict[str, List[Union[int, float]]],
     fig.savefig(buf, format='png')
     buf.seek(0)
 
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 
 if __name__ == "__main__":

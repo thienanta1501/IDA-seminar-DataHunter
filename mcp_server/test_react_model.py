@@ -9,11 +9,21 @@ from PIL import Image
 import io
 from langchain_core.messages.tool import ToolMessage
 import json
+import requests
 
 
 load_dotenv()
 model_name = os.getenv("MODEL_NAME")
 print("Model: ", model_name)
+
+def get_image_from_url(image_url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.0.0 Safari/537.36"
+    }
+    response = requests.get(image_url, headers=headers)
+    image = Image.open(io.BytesIO(response.content))
+    image.show()
+
 
 def print_stream(stream):
     for s in stream:
@@ -53,14 +63,14 @@ def parse_json_from_get_column_from_dataset_response(json_string):
 parse_type_mapping = {
     "get_all_orders": parse_json_from_get_all_orders_response,
     "get_column_from_dataset": parse_json_from_get_column_from_dataset_response,
-    "draw_bar_chart": parse_json_from_image,
-    "draw_boxplot_chart": parse_json_from_image,
-    "draw_distribution_chart": parse_json_from_image,
-    "draw_line_chart": parse_json_from_image,
-    "draw_pie_chart": parse_json_from_image,
-    "draw_scatter_chart": parse_json_from_image,
-    "draw_stackplot_chart": parse_json_from_image,
-    "draw_violinplot_chart": parse_json_from_image
+    "draw_bar_chart": get_image_from_url,
+    "draw_boxplot_chart": get_image_from_url,
+    "draw_distribution_chart": get_image_from_url,
+    "draw_line_chart": get_image_from_url,
+    "draw_pie_chart": get_image_from_url,
+    "draw_scatter_chart": get_image_from_url,
+    "draw_stackplot_chart": get_image_from_url,
+    "draw_violinplot_chart": get_image_from_url
     
 }
 
@@ -80,14 +90,15 @@ async def main():
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
 
-        message = "Draw a pie chart to represent the proportions of economic sectors in Vietnam's economy, given that industry accounts for 50%, agriculture for 30%, and handicrafts for 20%."
+        message = "Draw a grouped bar chart to compare number of goals and assistes of messi and ronaldo, where messi scored 98 goals and ronaldo scored 100 goals \
+            and messi assisted 100 and ronaldo assisted 98"
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
         for msg in response["messages"]:
             msg.pretty_print()
 
         tool_messages = [msg for msg in response['messages'] if isinstance(msg, ToolMessage)]
-        print(tool_messages)
+
         for msg in tool_messages:
             tool_name = msg.name
     
