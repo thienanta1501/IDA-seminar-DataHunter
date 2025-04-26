@@ -13,6 +13,7 @@ from langchain_core.messages.tool import ToolMessage
 import json
 
 
+
 load_dotenv()
 model_name = os.getenv("MODEL_NAME")
 api_key = os.getenv("GOOGLE_API_KEY")
@@ -79,6 +80,14 @@ async def ask_agent(message: str):
         print(response['messages'][-1].content)
         final_response = response['messages'][-1].content
 
+        # json_string = '''
+        # {
+        #     "Tên": ["An", "Bình", "Châu"],
+        #     "Tuổi": [21, 22, 20],
+        #     "Lớp": ["KTPM", "HTTT", "CNTT"]
+        # }
+        # '''
+        # return json_string, final_response
 
         for tool_message in tool_messages:
             tool_name = tool_message.name
