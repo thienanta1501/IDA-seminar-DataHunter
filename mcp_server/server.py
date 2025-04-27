@@ -64,7 +64,7 @@ def draw_arrow_chart(x: float, y: float, dx: float, dy: float,
     Returns
     -------
     str
-        A base64-encoded PNG image of the arrow chart.
+        A URL string linking to the generated arrow chart image hosted online.
     """
     chart = ArrowChart(title=title, x_label=x_label, y_label=y_label,
                        color=color, width=width,
@@ -75,7 +75,10 @@ def draw_arrow_chart(x: float, y: float, dx: float, dy: float,
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
@@ -281,7 +284,33 @@ def draw_error_bar_chart(x_data: List[Union[int, float]],
                          barsabove: bool = False, errorevery: int = 1,
                          capthick: Optional[float] = None) -> str:
     """
-    Generate an error bar chart and return it as a base64-encoded PNG string.
+    Plots an error bar chart using the provided x and y data, with optional error bars
+    for both x and y axes, and uploads the generated chart image to Imgur.
+
+    Args:
+        x_data (List[Union[int, float]]): The data for the x-axis.
+        y_data (List[Union[int, float]]): The data for the y-axis.
+        yerr (Optional[Union[float, List[float]]], optional): The y-axis error values. Default is None.
+        xerr (Optional[Union[float, List[float]]], optional): The x-axis error values. Default is None.
+        title (str, optional): The title of the chart. Default is an empty string.
+        x_label (str, optional): The label for the x-axis. Default is an empty string.
+        y_label (str, optional): The label for the y-axis. Default is an empty string.
+        fmt (str, optional): The format of the plot markers and lines. Default is "o".
+        color (Optional[str], optional): The color of the markers and lines. Default is None.
+        ecolor (Optional[str], optional): The color of the error bars. Default is None.
+        elinewidth (Optional[float], optional): The line width of the error bars. Default is None.
+        capsize (Optional[float], optional): The size of the caps at the ends of the error bars. Default is None.
+        barsabove (bool, optional): If True, draws error bars above the data points. Default is False.
+        errorevery (int, optional): Specifies the step size for drawing error bars. Default is 1.
+        capthick (Optional[float], optional): The thickness of the caps on the error bars. Default is None.
+
+    Returns:
+        str: The URL link of the uploaded error bar chart image on Imgur.
+
+    Example:
+        >>> draw_error_bar_chart([1, 2, 3], [2, 3, 4], yerr=[0.1, 0.2, 0.3])
+        'https://imgur.com/your-uploaded-image-link'
+
     """
     chart = ErrorBarChart(title=title, x_label=x_label, y_label=y_label,
                           fmt=fmt, color=color, ecolor=ecolor,
@@ -293,7 +322,10 @@ def draw_error_bar_chart(x_data: List[Union[int, float]],
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_fill_between_chart(x_data: List[Union[str, int, float]],
@@ -304,7 +336,30 @@ def draw_fill_between_chart(x_data: List[Union[str, int, float]],
                             color: str = "blue", alpha: float = 0.5,
                             step: Optional[str] = None, interpolate: bool = False) -> str:
     """
-    Generate a fill-between chart using matplotlib and return it as a base64-encoded PNG string.
+    Plots a filled area chart between two y datasets (y1 and y2) over the provided x data, 
+    with optional customization for color, transparency, and step formatting, 
+    and uploads the generated chart image to Imgur.
+
+    Args:
+        x_data (List[Union[str, int, float]]): The data for the x-axis. Can be integers, floats, or strings.
+        y1_data (List[Union[int, float]]): The first set of data for the y-axis.
+        y2_data (Union[List[Union[int, float]], int, float], optional): The second set of data for the y-axis (or a constant value). Default is 0.
+        where (Optional[List[bool]], optional): A boolean list indicating where to fill the area. Default is None.
+        title (str, optional): The title of the chart. Default is an empty string.
+        x_label (str, optional): The label for the x-axis. Default is an empty string.
+        y_label (str, optional): The label for the y-axis. Default is an empty string.
+        color (str, optional): The color of the filled area. Default is "blue".
+        alpha (float, optional): The transparency level of the filled area. Default is 0.5.
+        step (Optional[str], optional): If "pre", "post", or "mid", creates a step chart instead of a continuous line. Default is None.
+        interpolate (bool, optional): If True, interpolate the data between points. Default is False.
+
+    Returns:
+        str: The URL link of the uploaded filled area chart image on Imgur.
+
+    Example:
+        >>> draw_fill_between_chart([1, 2, 3], [2, 3, 4], y2_data=[1, 2, 3])
+        'https://imgur.com/your-uploaded-image-link'
+
     """
     chart = FillBetweenChart(title=title, x_label=x_label, y_label=y_label, color=color,
                              alpha=alpha, step=step, interpolate=interpolate)
@@ -313,7 +368,10 @@ def draw_fill_between_chart(x_data: List[Union[str, int, float]],
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_fill_betweenx_chart(y: List[Union[int, float]],
@@ -347,10 +405,12 @@ def draw_fill_betweenx_chart(y: List[Union[int, float]],
     interpolate : bool, optional
         Whether to interpolate when using `where`.
 
-    Returns
-    -------
-    str
-        A base64-encoded PNG image.
+    Returns:
+        str: The URL link of the uploaded filled area chart image on Imgur.
+
+    Example:
+        >>> draw_fill_between_chart([1, 2, 3], [2, 3, 4], y2_data=[1, 2, 3])
+        'https://imgur.com/your-uploaded-image-link'
     """
     chart = FillBetweenXChart(title=title, x_label=x_label, y_label=y_label,
                               color=color, alpha=alpha, step=step, interpolate=interpolate)
@@ -359,7 +419,10 @@ def draw_fill_betweenx_chart(y: List[Union[int, float]],
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
@@ -463,25 +526,23 @@ def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = Non
 def draw_polar_chart(theta_data: List[Union[int, float]], r_data: List[Union[int, float]],
                      title: str = "", color: str = "blue", linewidth: float = 1.5) -> str:
     """
-    Generate a polar chart from the given data and return it as a base64-encoded PNG string.
+    Plots a polar chart using the provided theta (angular) and r (radial) data, with optional 
+    customization for the chart title, color, and line width, and uploads the generated chart image to Imgur.
 
-    Parameters
-    ----------
-    theta_data : list
-        A list of angles in radians (the x-axis values in polar coordinates).
-    r_data : list
-        A list of radial values (the y-axis values in polar coordinates).
-    title : str, optional
-        Title of the chart (default is an empty string).
-    color : str, optional
-        Line color (default is "blue").
-    linewidth : float, optional
-        Line width (default is 1.5).
+    Args:
+        theta_data (List[Union[int, float]]): The angular data for the chart (theta), typically in radians.
+        r_data (List[Union[int, float]]): The radial data for the chart (r), representing the distance from the center.
+        title (str, optional): The title of the chart. Default is an empty string.
+        color (str, optional): The color of the plot lines. Default is "blue".
+        linewidth (float, optional): The line width of the plot. Default is 1.5.
 
-    Returns
-    -------
-    str
-        A base64-encoded PNG image of the generated polar chart.
+    Returns:
+        str: The URL link of the uploaded polar chart image on Imgur.
+
+    Example:
+        >>> draw_polar_chart([0, 1, 2], [1, 2, 3], title="Polar Plot", color="red")
+        'https://imgur.com/your-uploaded-image-link'
+
     """
     chart = PolarChart(title=title, color=color, linewidth=linewidth)
     fig = chart.create_chart(theta_data, r_data)
@@ -489,7 +550,10 @@ def draw_polar_chart(theta_data: List[Union[int, float]], r_data: List[Union[int
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_quiver_chart(x_data: List[Union[int, float]], y_data: List[Union[int, float]],
@@ -497,33 +561,28 @@ def draw_quiver_chart(x_data: List[Union[int, float]], y_data: List[Union[int, f
                       title: str = "", x_label: str = "", y_label: str = "",
                       color: str = "blue", scale: float = 1.0) -> str:
     """
-    Generate a quiver chart from the given data and return it as a base64-encoded PNG string.
+    Plots a quiver chart using the provided x, y data and their corresponding vector components (u, v),
+    with optional customization for the chart title, axis labels, color, and scale, 
+    and uploads the generated chart image to Imgur.
 
-    Parameters
-    ----------
-    x_data : list
-        A list of x-axis values.
-    y_data : list
-        A list of y-axis values.
-    u_data : list
-        The x-components of the vectors.
-    v_data : list
-        The y-components of the vectors.
-    title : str, optional
-        Title of the chart (default is an empty string).
-    x_label : str, optional
-        Label for the x-axis (default is an empty string).
-    y_label : str, optional
-        Label for the y-axis (default is an empty string).
-    color : str, optional
-        Color of the vectors (default is "blue").
-    scale : float, optional
-        Scaling factor for the vectors (default is 1.0).
+    Args:
+        x_data (List[Union[int, float]]): The x coordinates of the vector origins.
+        y_data (List[Union[int, float]]): The y coordinates of the vector origins.
+        u_data (List[Union[int, float]]): The x components of the vectors.
+        v_data (List[Union[int, float]]): The y components of the vectors.
+        title (str, optional): The title of the chart. Default is an empty string.
+        x_label (str, optional): The label for the x-axis. Default is an empty string.
+        y_label (str, optional): The label for the y-axis. Default is an empty string.
+        color (str, optional): The color of the vectors. Default is "blue".
+        scale (float, optional): The scaling factor for the vectors. Default is 1.0.
 
-    Returns
-    -------
-    str
-        A base64-encoded PNG image of the generated quiver chart.
+    Returns:
+        str: The URL link of the uploaded quiver chart image on Imgur.
+
+    Example:
+        >>> draw_quiver_chart([1, 2, 3], [1, 2, 3], [0.5, -0.5, 0.2], [0.5, 0.5, -0.2], title="Quiver Plot", color="green")
+        'https://imgur.com/your-uploaded-image-link'
+
     """
     chart = QuiverChart(title=title, x_label=x_label, y_label=y_label, color=color, scale=scale)
     fig = chart.create_chart(x_data, y_data, u_data, v_data)
@@ -531,7 +590,10 @@ def draw_quiver_chart(x_data: List[Union[int, float]], y_data: List[Union[int, f
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_scatter_chart(
@@ -662,35 +724,29 @@ def draw_stem_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int
                     linefmt: str = "C0-", markerfmt: str = "C0o", basefmt: str = "k-",
                     bottom: float = 0, orientation: str = "vertical") -> str:
     """
-    Generate a stem chart from the given data and return it as a base64-encoded PNG string.
+    Plots a stem chart using the provided x and y data, with optional customization for 
+    chart title, axis labels, line and marker formatting, and orientation, 
+    and uploads the generated chart image to Imgur.
 
-    Parameters
-    ----------
-    x_data : list
-        A list of x-axis values.
-    y_data : list
-        A list of y-axis values corresponding to each x-axis value.
-    title : str, optional
-        Title of the chart.
-    x_label : str, optional
-        Label for the x-axis.
-    y_label : str, optional
-        Label for the y-axis.
-    linefmt : str, optional
-        Format string for the stem lines (default "C0-").
-    markerfmt : str, optional
-        Format string for the markers (default "C0o").
-    basefmt : str, optional
-        Format string for the baseline (default "k-").
-    bottom : float, optional
-        The bottom value of the stems (default 0).
-    orientation : str, optional
-        "vertical" or "horizontal" (default "vertical").
+    Args:
+        x_data (List[Union[str, int, float]]): The x coordinates of the stem chart.
+        y_data (List[Union[int, float]]): The y coordinates of the stem chart.
+        title (str, optional): The title of the chart. Default is an empty string.
+        x_label (str, optional): The label for the x-axis. Default is an empty string.
+        y_label (str, optional): The label for the y-axis. Default is an empty string.
+        linefmt (str, optional): The format for the lines connecting the stems. Default is "C0-" (blue solid line).
+        markerfmt (str, optional): The format for the markers at the top of the stems. Default is "C0o" (blue circle markers).
+        basefmt (str, optional): The format for the baseline of the stems. Default is "k-" (black solid line).
+        bottom (float, optional): The baseline position for the stems. Default is 0.
+        orientation (str, optional): The orientation of the stems ("vertical" or "horizontal"). Default is "vertical".
 
-    Returns
-    -------
-    str
-        A base64-encoded PNG image of the generated stem chart.
+    Returns:
+        str: The URL link of the uploaded stem chart image on Imgur.
+
+    Example:
+        >>> draw_stem_chart([1, 2, 3], [2, 3, 4], title="Stem Plot", color="red")
+        'https://imgur.com/your-uploaded-image-link'
+
     """
     chart = StemChart(title=title, x_label=x_label, y_label=y_label,
                       linefmt=linefmt, markerfmt=markerfmt, basefmt=basefmt,
@@ -700,7 +756,10 @@ def draw_stem_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
 
 @mcp.tool()
 def draw_step_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int, float]],
@@ -708,35 +767,29 @@ def draw_step_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int
                     color: str = "blue", linestyle: str = "-", marker: str = "",
                     linewidth: float = 1.5, where: str = "pre") -> str:
     """
-    Generate a step chart from the given data and return it as a base64-encoded PNG string.
+    Plots a step chart using the provided x and y data with optional customization 
+    for the chart title, axis labels, line style, marker, line width, and step alignment, 
+    and uploads the generated chart image to Imgur.
 
-    Parameters
-    ----------
-    x_data : list
-        A list of x-axis values (usually time or steps).
-    y_data : list
-        A list of y-axis values corresponding to each x-axis value.
-    title : str, optional
-        Title of the chart (default is an empty string).
-    x_label : str, optional
-        Label for the x-axis (default is an empty string).
-    y_label : str, optional
-        Label for the y-axis (default is an empty string).
-    color : str, optional
-        Line color (default is "blue").
-    linestyle : str, optional
-        Line style (default is "-").
-    marker : str, optional
-        Marker style for the data points (default is none).
-    linewidth : float, optional
-        Line width (default is 1.5).
-    where : str, optional
-        Positioning of the step: "pre", "post", or "mid" (default is "pre").
+    Args:
+        x_data (List[Union[str, int, float]]): The x coordinates for the step chart.
+        y_data (List[Union[int, float]]): The y coordinates for the step chart.
+        title (str, optional): The title of the chart. Default is an empty string.
+        x_label (str, optional): The label for the x-axis. Default is an empty string.
+        y_label (str, optional): The label for the y-axis. Default is an empty string.
+        color (str, optional): The color of the step line. Default is "blue".
+        linestyle (str, optional): The line style for the steps. Default is a solid line ("-").
+        marker (str, optional): The marker for the step chart. Default is no marker ("").
+        linewidth (float, optional): The width of the step line. Default is 1.5.
+        where (str, optional): Defines the alignment of the steps. Options are "pre", "post", or "mid". Default is "pre".
 
-    Returns
-    -------
-    str
-        A base64-encoded PNG image of the generated step chart.
+    Returns:
+        str: The URL link of the uploaded step chart image on Imgur.
+
+    Example:
+        >>> draw_step_chart([1, 2, 3], [2, 3, 4], title="Step Chart", color="red")
+        'https://imgur.com/your-uploaded-image-link'
+
     """
     chart = StepChart(title=title, x_label=x_label, y_label=y_label, color=color,
                       linestyle=linestyle, marker=marker, linewidth=linewidth, where=where)
@@ -745,7 +798,11 @@ def draw_step_chart(x_data: List[Union[str, int, float]], y_data: List[Union[int
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
     buf.seek(0)
-    return buf.read()
+    image_bytes = buf.read()
+    link = upload_image_to_imgur(client_id,image_host_url, image_bytes)
+
+    return link
+
 
 @mcp.tool()
 def draw_violinplot_chart(category: Dict[str, List[Union[int, float]]],

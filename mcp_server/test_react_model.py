@@ -63,22 +63,22 @@ def parse_json_from_get_column_from_dataset_response(json_string):
 parse_type_mapping = {
     "get_all_orders": parse_json_from_get_all_orders_response,
     "get_column_from_dataset": parse_json_from_get_column_from_dataset_response,
-    "draw_bar_chart": parse_json_from_image,
-    "draw_boxplot_chart": parse_json_from_image,
-    "draw_distribution_chart": parse_json_from_image,
-    "draw_line_chart": parse_json_from_image,
-    "draw_pie_chart": parse_json_from_image,
-    "draw_scatter_chart": parse_json_from_image,
-    "draw_stackplot_chart": parse_json_from_image,
-    "draw_violinplot_chart": parse_json_from_image,
-    "draw_step_chart": parse_json_from_image,
-    "draw_fill_between_chart": parse_json_from_image,
-    "draw_fill_betweenx_chart": parse_json_from_image,
-    "draw_error_bar_chart": parse_json_from_image,
-    "draw_stem_chart": parse_json_from_image,
-    "draw_quiver_chart": parse_json_from_image,
-    "draw_polar_chart": parse_json_from_image,
-    "draw_arrow_chart": parse_json_from_image
+    "draw_bar_chart": get_image_from_url,
+    "draw_boxplot_chart": get_image_from_url,
+    "draw_distribution_chart": get_image_from_url,
+    "draw_line_chart": get_image_from_url,
+    "draw_pie_chart": get_image_from_url,
+    "draw_scatter_chart": get_image_from_url,
+    "draw_stackplot_chart": get_image_from_url,
+    "draw_violinplot_chart": get_image_from_url,
+    "draw_step_chart": get_image_from_url,
+    "draw_fill_between_chart": get_image_from_url,
+    "draw_fill_betweenx_chart": get_image_from_url,
+    "draw_error_bar_chart": get_image_from_url,
+    "draw_stem_chart": get_image_from_url,
+    "draw_quiver_chart": get_image_from_url,
+    "draw_polar_chart": get_image_from_url,
+    "draw_arrow_chart": get_image_from_url
 }
 
 async def main():
@@ -97,8 +97,7 @@ async def main():
     ) as client:
         agent = create_react_agent(model, tools=client.get_tools())
 
-        message = "Draw a grouped bar chart to compare number of goals and assistes of messi and ronaldo, where messi scored 98 goals and ronaldo scored 100 goals \
-            and messi assisted 100 and ronaldo assisted 98"
+        message = "Draw an error bar chart to compare the average test scores of two classes, Class A and Class B. Class A had an average score of 85 with a standard deviation of 5, while Class B had an average score of 88 with a standard deviation of 4."
         # print(client.get_tools()[0].args_schema)
         response = await agent.ainvoke({"messages": message})
         for msg in response["messages"]:
