@@ -344,3 +344,65 @@ async def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]]
     except Exception as e:
         print(f"Exception when call tool draw pie chart {e}")
         return f"Exception when call tool draw pie chart {e}"
+    
+async def draw_scatter_chart(
+    x: List[float],
+    y: List[float],
+    s: Union[float, List[float]] = 20.0,  # Kích thước điểm, có thể là scalar hoặc array
+    c: Union[float, str, List[Union[float, str]]]=[],  # Màu sắc điểm, có thể là scalar, string hoặc list
+    marker: str = 'o',
+    cmap: str = "",
+    vmin: float = 0.0,
+    vmax: float = 1.0,
+    alpha: float = 1.0,
+    linewidths: float = 0.5,
+    edgecolors: str = 'face',
+    plotnonfinite: bool = False,
+    title: str = ""
+) -> str:
+    """
+    Generate a scatter plot using the provided x and y values with customizable visual attributes.
+
+    Parameters:
+        x (List[float]): X-axis values of the scatter points.
+        y (List[float]): Y-axis values of the scatter points.
+        s (float or List[float], optional): Size of points. Either a scalar or a list with the same length as x/y.
+        c (List[float] or List[str], optional): Colors of each point (numeric or string colors).
+        marker (str): Style of point markers (default: 'o').
+        cmap (str or Colormap, optional): Colormap used if `c` is numeric.
+        vmin (float, optional): Minimum value for colormap normalization.
+        vmax (float, optional): Maximum value for colormap normalization.
+        alpha (float, optional): Opacity level of points (0 to 1).
+        linewidths (float, optional): Width of point edges.
+        edgecolors (str, optional): Edge color for points.
+        plotnonfinite (bool): Whether to plot NaN/inf points (default: False).
+        title (str): Title of the chart.
+
+    Returns:
+        A URL string linking to the generated scatter chart image hosted online.
+    """
+    try:
+        mcp_client = await get_mcp_client()
+        tool_name = "draw_scatter_chart"
+        params = {
+            "x": x,
+            "y": y,
+            "s": s,
+            "c": c,
+            "marker": marker,
+            "cmap": cmap,
+            "vmin": vmin,
+            "vmax": vmax,
+            "alpha": alpha,
+            "linewidths": linewidths,
+            "edgecolors": edgecolors,
+            "plotnonfinite": plotnonfinite,
+            "title": title
+        }
+
+        result = await mcp_client.process_query(tool_name, params=params)
+
+        return result
+    except Exception as e:
+        print(f"Exception when call tool draw scatter chart {e}")
+        return f"Exception when call tool draw scatter chart {e}"
