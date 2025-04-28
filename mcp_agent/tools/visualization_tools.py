@@ -5,146 +5,127 @@ visualization tools.
 """
 
 from typing import Any, Dict, List, Optional, Union
-
 #import aiohttp
 from langchain.tools import BaseTool
-from pydantic import BaseModel, Field
+from mcp_agent.mcp_client import get_mcp_client
+
+async def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
+                   type: str = "simple") -> str:
+    """
+    Draws a bar chart based on the provided data and returns the image as a hosted URL.
+
+    Parameters
+    ----------
+    x_data : list of str | int | float
+        A list of category labels for the x-axis.
+
+    y_data : dict[str, list]
+        A dictionary containing one or more data series:
+            - Keys are the series names (e.g., "Revenue", "Profit").
+            - Values are lists of numerical values aligned with `x_data`.
+
+    title : str, optional
+        The title of the chart. Default is an empty string.
+
+    x_label : str, optional
+        The label for the x-axis. Default is an empty string.
+
+    y_label : str, optional
+        The label for the y-axis. Default is an empty string.
+
+    color : str, optional
+        The color of the bars. Applies only to simple charts or all series if using a single color. Default is "skyblue".
+
+    type : str, optional
+        The type of bar chart to create. Options include:
+            - "simple": A basic single-series bar chart.
+            - "grouped": A grouped bar chart for comparing multiple series side-by-side.
+            - "stacked": A stacked bar chart combining multiple series.
+        If multiple series are provided and `type` is not explicitly set, it defaults to "stacked".
+
+    Returns
+    -------
+    str
+        A URL string linking to the generated bar chart image hosted online.
+    """
+    try:
+        mcp_client = await get_mcp_client()
+        params = {
+            "x_data": x_data,
+            "y_data": y_data,
+            "title": title,
+            "x_label": x_label,
+            "y_label": y_label,
+            "color": color,
+            "type": type 
+        }
+
+        tool_name = "draw_bar_chart"
+
+        result = await mcp_client.process_query(tool_name, params=params)
+
+        return result
+    except Exception as e:
+        print(f"Exception when call tool draw bar chart {e}")
+        return f"Exception when call tool draw bar chart {e}"
 
 
-class VisualizationInput(BaseModel):
-    """Input for the visualization tool."""
-    
-    chart_type: str = Field(
-        ...,
-        description="Type of chart to generate (bar, line, scatter, pie, etc.)",
-    )
-    data: Union[Dict[str, Any], str] = Field(
-        ...,
-        description="Data to visualize, either as a DataFrame or a CSV string",
-    )
-    x_column: Optional[str] = Field(
-        None,
-        description="Column to use for the x-axis",
-    )
-    y_column: Optional[str] = Field(
-        None,
-        description="Column to use for the y-axis",
-    )
-    title: Optional[str] = Field(
-        None,
-        description="Title for the chart",
-    )
-    x_label: Optional[str] = Field(
-        None,
-        description="Label for the x-axis",
-    )
-    y_label: Optional[str] = Field(
-        None,
-        description="Label for the y-axis",
-    )
-    color: Optional[str] = Field(
-        None,
-        description="Color for the chart",
-    )
-    figsize: Optional[tuple[int, int]] = Field(
-        None,
-        description="Figure size as a tuple of (width, height)",
-    )
+async def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
+                   type: str = "simple") -> str:
+    """
+    Generate a horizontal bar chart and return it as a PNG byte string.
 
+    This function uses the BarhChart class to generate a horizontal bar chart based on the given data.
+    It supports "simple", "grouped", and "stacked" chart types.
 
-class VisualizationTool(BaseTool):
-    """Tool for generating visualizations."""
-    
-    name = "visualize_tool"
-    description = "Generates visualizations using Matplotlib based on input parameters (chart type, data, etc.) and returns a .jpg or .png image."
-    args_schema = VisualizationInput
-    
-    def __init__(self, server_url: str):
-        """Initialize the tool.
+    Parameters
+    ----------
+    y_data : list of str | int | float
+        A list of labels for the y-axis categories (e.g., names, groups, etc.).
+    x_data : dict of str -> list of float
+        A dictionary where keys are data series labels and values are lists of numerical values
+        corresponding to each y-axis label in `y_data`.
+    title : str, optional
+        The title of the chart (default is an empty string).
+    x_label : str, optional
+        The label for the x-axis (default is an empty string).
+    y_label : str, optional
+        The label for the y-axis (default is an empty string).
+    color : str, optional
+        The default color for bars (only applies to "simple" charts). Default is "skyblue".
+    type : str, optional
+        Type of bar chart to draw. One of:
+            - "simple": A basic horizontal bar chart using the first series in `x_data`.
+            - "grouped": Displays bars for each series side by side.
+            - "stacked": Stacks values of all series on the same bar.
+        Default is "simple".
+
+    Returns
+    -------
+    str
+        A URL string linking to the generated bar horizontal chart image hosted online.
+    """
+    try:
+        mcp_client = await get_mcp_client()
         
-        Args:
-            server_url: URL of the MCP server.
-        """
-        super().__init__()
-        self.server_url = server_url
-    
-    async def _arun(
-        self,
-        chart_type: str,
-        data: Union[Dict[str, Any], str],
-        x_column: Optional[str] = None,
-        y_column: Optional[str] = None,
-        title: Optional[str] = None,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        color: Optional[str] = None,
-        figsize: Optional[tuple[int, int]] = None,
-        **kwargs: Any,
-    ) -> str:
-        """Run the tool asynchronously.
-        
-        Args:
-            chart_type: Type of chart to generate.
-            data: Data to visualize.
-            x_column: Column to use for the x-axis.
-            y_column: Column to use for the y-axis.
-            title: Title for the chart.
-            x_label: Label for the x-axis.
-            y_label: Label for the y-axis.
-            color: Color for the chart.
-            figsize: Figure size.
-            **kwargs: Additional tool arguments.
-            
-        Returns:
-            The visualization as a base64-encoded image.
-        """
-        # async with aiohttp.ClientSession() as session:
-        #     async with session.post(
-        #         f"{self.server_url}/tools/visualize_tool",
-        #         json={
-        #             "chart_type": chart_type,
-        #             "data": data,
-        #             "x_column": x_column,
-        #             "y_column": y_column,
-        #             "title": title,
-        #             "x_label": x_label,
-        #             "y_label": y_label,
-        #             "color": color,
-        #             "figsize": figsize,
-        #         },
-        #     ) as response:
-        #         result = await response.json()
-        #         return result["image"]
-        return "Mock"
-    
-    def _run(
-        self,
-        chart_type: str,
-        data: Union[Dict[str, Any], str],
-        x_column: Optional[str] = None,
-        y_column: Optional[str] = None,
-        title: Optional[str] = None,
-        x_label: Optional[str] = None,
-        y_label: Optional[str] = None,
-        color: Optional[str] = None,
-        figsize: Optional[tuple[int, int]] = None,
-        **kwargs: Any,
-    ) -> str:
-        """Run the tool synchronously.
-        
-        Args:
-            chart_type: Type of chart to generate.
-            data: Data to visualize.
-            x_column: Column to use for the x-axis.
-            y_column: Column to use for the y-axis.
-            title: Title for the chart.
-            x_label: Label for the x-axis.
-            y_label: Label for the y-axis.
-            color: Color for the chart.
-            figsize: Figure size.
-            **kwargs: Additional tool arguments.
-            
-        Returns:
-            The visualization as a base64-encoded image.
-        """
-        raise NotImplementedError("This tool only supports async execution") 
+        params = {
+            "x_data": x_data,
+            "y_data": y_data,
+            "title": title,
+            "x_label": x_label,
+            "y_label": y_label,
+            "color": color,
+            "type": type
+        }
+
+        # Tên tool bạn định gọi
+        tool_name = "draw_barh_chart"
+
+        # Gọi xử lý thông qua MCP
+        result = await mcp_client.process_query(tool_name, params=params)
+
+        return result
+
+    except Exception as e:
+        print(f"Exception when calling tool draw_barh_chart: {e}")
+        return f"Exception when calling tool draw_barh_chart: {e}"

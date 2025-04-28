@@ -1,15 +1,29 @@
 from mcp_agent.agent_gemini import DataAgentGraph
 from mcp_agent.mock_test_agent import *
+from langchain_google_genai import ChatGoogleGenerativeAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv(dotenv_path="mcp_agent/.env")
 # --- Example Usage ---
 async def main():
     # Replace with your actual LLM instance
     try:
         # Use OpenAI or another supported LLM
-        from langchain_openai import ChatOpenAI
-        # from langchain_google_genai import ChatGoogleGenerativeAI
-        # Ensure API keys are set (e.g., OPENAI_API_KEY environment variable)
-        llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
-        # llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", temperature=0, streaming=True)
+        model_type = os.getenv("MODEL_TYPE")
+        model_name = os.getenv("MODEL_NAME")
+        print(model_name)
+        
+        if model_type == "OPEN_AI":
+            from langchain_openai import ChatOpenAI
+            # from langchain_google_genai import ChatGoogleGenerativeAI
+            # Ensure API keys are set (e.g., OPENAI_API_KEY environment variable)
+            llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, streaming=True)
+            # llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", temperature=0, streaming=True)
+        elif model_type == "GEMINI":
+            llm = ChatGoogleGenerativeAI(model = model_name, temperature=0.0)
+        else:
+            raise NameError(f"Not support model {model_type}")
     except ImportError:
         print("Error: Langchain OpenAI/Google not installed. Add 'langchain-openai' or 'langchain-google-genai' to your requirements.")
         return
