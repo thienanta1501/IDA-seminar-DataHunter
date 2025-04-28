@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 class HistChart:
     def __init__(self, title="", x_label="", y_label="", color="green", bins=10,
-                 alpha=0.75, category=None, density=False, histtype="bar", stacked=False):
+                 alpha=0.75, category=None, density=True, histtype="bar", stacked=False):
         self.title = title
         self.x_label = x_label
         self.y_label = y_label
@@ -51,7 +52,9 @@ class HistChart:
                     alpha=self.alpha,
                     density=self.density,
                     histtype=self.histtype,
-                    edgecolor='black')
+                    edgecolor='black', label="histogram")
+            sns.kdeplot(data, ax=ax, color=self.color, label="kde")
+            ax.legend()
 
         ax.set_title(self.title)
         ax.set_xlabel(self.x_label)

@@ -189,7 +189,7 @@ async def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]]
                             color: Optional[Union[str, List[str]]] = None, 
                             alpha: float = 0.75, stacked: bool = False) -> str:
     """
-    Generate a histogram (distribution chart) from the given data and return it as a base64-encoded PNG string.
+    Generate a histogram (distribution chart) from the given data and return it as an url string of image.
 
     Parameters:
         category (dict): A dictionary where keys are categories and values are lists of numeric values for each group.
