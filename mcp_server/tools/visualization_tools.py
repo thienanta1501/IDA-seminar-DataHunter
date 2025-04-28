@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from ..utils.index import post_image_to_host_server
 from mcp_server.tools.charts.barchart import BarChart
 from mcp_server.tools.charts.barhchart import BarhChart
+from mcp_server.tools.charts.boxplotchart import BoxPlotChart
 
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
                    type: str = "simple") -> str:
@@ -38,6 +39,27 @@ def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str, list
 
     buf = io.BytesIO()
     fig.savefig(buf, format='png')
+    buf.seek(0)
+    image_bytes = buf.read()
+    link = post_image_to_host_server(image_bytes)
+
+    return link
+
+def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: str = "", y_label: str = "",
+                       notch: bool = False, vert: bool = True, showmeans: bool = False,
+                       showcaps: bool = True, showbox: bool = True, showfliers: bool = True,
+                       widths: Optional[List[float]] = None, positions: Optional[List[int]] = None, 
+                       ) -> str:
+    chart = BoxPlotChart(
+        title=title, x_label=x_label, y_label=y_label,
+        notch=notch, vert=vert, showmeans=showmeans,
+        showcaps=showcaps, showbox=showbox, showfliers=showfliers,
+        widths=widths, positions=positions
+    )
+    fig = chart.create_chart(data)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
     buf.seek(0)
     image_bytes = buf.read()
     link = post_image_to_host_server(image_bytes)

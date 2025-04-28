@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from mcp_server.tools.db_tools import get_db_structure, sql_tool
 from mcp_server.tools.ml_tools import build_ml_model
 from mcp_server.tools.python_tools import python_execute_tool
-from mcp_server.tools.visualization_tools import draw_bar_chart, draw_barh_chart
+from mcp_server.tools.visualization_tools import draw_bar_chart, draw_barh_chart, draw_boxplot_chart
 
 
 
@@ -68,6 +68,11 @@ class DataServer:
         self.server.add_tool(
             draw_barh_chart,
             name="draw_barh_chart"
+        )
+
+        self.server.add_tool(
+            draw_boxplot_chart,
+            name="draw_boxplot_chart"
         )
         
         # Python execution tool

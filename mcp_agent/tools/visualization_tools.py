@@ -129,3 +129,55 @@ async def draw_barh_chart(y_data: List[Union[str, int, float]], x_data: dict[str
     except Exception as e:
         print(f"Exception when calling tool draw_barh_chart: {e}")
         return f"Exception when calling tool draw_barh_chart: {e}"
+    
+async def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: str = "", y_label: str = "",
+                       notch: bool = False, vert: bool = True, showmeans: bool = False,
+                       showcaps: bool = True, showbox: bool = True, showfliers: bool = True,
+                       widths: List[float] = None, positions: List[int] = None, 
+                       ) -> str:
+    """
+    Generate a boxplot chart from the given data and return it as a base64-encoded PNG string.
+
+    Parameters:
+        data (Dict[str, List[float]]): A dictionary where each key is a label (str) for a data group, 
+        and the value is a list of float numbers representing the numeric values in that group.
+        Each key corresponds to one box in the boxplot.
+        x_label (str): The label for the x-axis.
+        y_label (str): The label for the y-axis.
+        notch (bool): Whether to draw a notch in the boxplot (default is False).
+        vert (bool): Whether the boxplot should be vertical (True) or horizontal (False, default is True).
+        showmeans (bool): Whether to display the mean in the boxplot (default is False).
+        showcaps (bool): Whether to display the caps at the ends of the whiskers (default is True).
+        showbox (bool): Whether to display the box in the boxplot (default is True).
+        showfliers (bool): Whether to display the outliers in the boxplot (default is True).
+        widths (Optional[List[float]]): Width of the boxes in the boxplot (default is None).
+        positions (Optional[List[int]]): Positions of the boxes along the x-axis (default is None).
+        labels (Optional[List[str]]): Labels for each group in the boxplot (default is None).
+
+    Returns:
+        A URL string linking to the generated boxplot image hosted online.
+    """
+    try:
+        mcp_client = await get_mcp_client()
+        tool_name = "draw_boxplot_chart"
+        params = {
+            "data": data,
+            "title": title,
+            "x_label": x_label,
+            "y_label": y_label,
+            "notch": notch,
+            "vert": vert,
+            "showmeans": showmeans,
+            "showcaps": showcaps,
+            "showbox": showbox,
+            "showfliers": showfliers,
+            "widths": widths,
+            "positions": positions
+        }
+
+        result = await mcp_client.process_query(tool_name, params=params)
+        print(f"type cua result la: {type(result)}")
+        return result
+    except Exception as e:
+        print(f"Exception when calling tool draw_boxplot_chart: {e}")
+        return f"Exception when calling tool draw_boxplot_chart: {e}"
