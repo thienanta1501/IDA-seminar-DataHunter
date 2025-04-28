@@ -106,7 +106,7 @@ def get_db_structure(schema_name: str) -> DBStructureOutput:
         # Iterate through each table
         # for table_name in tables_df['table_name']:
         for table in tables:
-            DB_INFORMATION_PROMPT +=  "==========\n" + f"Table Name: {table["table_name"]}\n" + "Columns:\n"
+            DB_INFORMATION_PROMPT +=  "==========\n" + f"Table Name: {table['table_name']}\n" + "Columns:\n"
             
             # Get column details for the current table
             specific_columns_query = columns_query.format(schema=schema_name, table_name=table["table_name"])
