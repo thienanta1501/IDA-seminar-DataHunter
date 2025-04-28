@@ -16,6 +16,7 @@ from ..utils.index import post_image_to_host_server
 from mcp_server.tools.charts.barchart import BarChart
 from mcp_server.tools.charts.barhchart import BarhChart
 from mcp_server.tools.charts.boxplotchart import BoxPlotChart
+from mcp_server.tools.charts.histchart import HistChart
 
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
                    type: str = "simple") -> str:
@@ -61,6 +62,36 @@ def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_label: s
     buf = io.BytesIO()
     fig.savefig(buf, format="png")
     buf.seek(0)
+    image_bytes = buf.read()
+    link = post_image_to_host_server(image_bytes)
+
+    return link
+
+def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]] = None, 
+                            data: Optional[List[Union[int, float]]] = None, 
+                            bins: int = 10, title: str = "", 
+                            x_label: str = "", y_label: str = "", 
+                            color: Optional[Union[str, List[str]]] = None, 
+                            alpha: float = 0.75, stacked: bool = False) -> str:
+    if category:
+        chart = HistChart(
+            title=title, x_label=x_label, y_label=y_label, color=color, bins=bins,
+            alpha=alpha, category=category, stacked=stacked
+        )
+    elif data:
+        chart = HistChart(
+            title=title, x_label=x_label, y_label=y_label, color=color, bins=bins,
+            alpha=alpha, stacked=stacked
+        )
+    else:
+        raise ValueError("Either 'category' or 'data' must be provided.")
+
+    fig = chart.create_chart(data if not category else None)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+
     image_bytes = buf.read()
     link = post_image_to_host_server(image_bytes)
 

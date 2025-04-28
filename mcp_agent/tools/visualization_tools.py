@@ -181,3 +181,50 @@ async def draw_boxplot_chart(data: Dict[str, List[float]], title: str = "", x_la
     except Exception as e:
         print(f"Exception when calling tool draw_boxplot_chart: {e}")
         return f"Exception when calling tool draw_boxplot_chart: {e}"
+    
+async def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]] = None, 
+                            data: Optional[List[Union[int, float]]] = None, 
+                            bins: int = 10, title: str = "", 
+                            x_label: str = "", y_label: str = "", 
+                            color: Optional[Union[str, List[str]]] = None, 
+                            alpha: float = 0.75, stacked: bool = False) -> str:
+    """
+    Generate a histogram (distribution chart) from the given data and return it as a base64-encoded PNG string.
+
+    Parameters:
+        category (dict): A dictionary where keys are categories and values are lists of numeric values for each group.
+        data (list): A list of numeric values for a single dataset (if category is not provided).
+        bins (int): The number of histogram bins (default is 10).
+        title (str): The title of the chart.
+        x_label (str): The label for the x-axis.
+        y_label (str): The label for the y-axis.
+        color (Optional[str or list]): The color of the bars (default is None). Can be a single color or a list of colors.
+        alpha (float): The transparency of the bars (default is 0.75).
+        stacked (bool): Whether the bars should be stacked (default is False).
+
+    Returns:
+        A URL string linking to the generated distribution chart image hosted online.
+    """
+
+    try:
+        mcp_client = await get_mcp_client()
+
+        tool_name = "draw_hist_chart"
+        params = {
+            "category": category,
+            "data": data,
+            "bins": bins,
+            "title": title,
+            "x_label": x_label,
+            "y_label": y_label,
+            "color": color,
+            "alpha": alpha,
+            "stacked": stacked
+        }
+
+        result = await mcp_client.process_query(tool_name, params=params)
+
+        return result
+    except Exception as e:
+        print(f"Exception when call tool draw hist chart {e}")
+        return f"Exception when call tool draw hist chart {e}"
