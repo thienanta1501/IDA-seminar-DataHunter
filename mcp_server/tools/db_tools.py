@@ -34,10 +34,6 @@ class SQLQueryInput(BaseModel):
     """Input for the SQL query tool."""
     
     query: str = Field(..., description="SQL query to execute")
-    return_format: str = Field(
-        default="dataframe",
-        description="Format to return the results in (dataframe or csv)",
-    )
 
 
 class DBStructureOutput(BaseModel):
@@ -101,32 +97,29 @@ def get_db_structure(schema_name: str) -> DBStructureOutput:
         
         # Get all tables
         tables_query = tables_query.format(schema=schema_name)
-        #table_query_basemodel = SQLQueryInput(query=tables_query, return_format="dataframe")
-        tables_df =  sql_tool(query=tables_query, return_format="dataframe", is_server=True)
+        tables =  sql_tool(query=tables_query, is_server=True)
         
         # Iterate through each table
-        for table_name in tables_df['table_name']:
-            DB_INFORMATION_PROMPT +=  "==========\n" + f"Table Name: {table_name}\n" + "Columns:\n"
+        # for table_name in tables_df['table_name']:
+        for table in tables:
+            DB_INFORMATION_PROMPT +=  "==========\n" + f"Table Name: {table["table_name"]}\n" + "Columns:\n"
             
             # Get column details for the current table
-            specific_columns_query = columns_query.format(schema=schema_name, table_name=table_name)
-            #print(specific_columns_query)
-            #columns_query_basemodel = SQLQueryInput(query=specific_columns_query, return_format="dataframe")
-            columns_df =  sql_tool(query=specific_columns_query, return_format="dataframe",is_server=True)
+            specific_columns_query = columns_query.format(schema=schema_name, table_name=table["table_name"])
+            #print(specific_columns_query
+            columns =  sql_tool(query=specific_columns_query,is_server=True)
             # Create dictionary of column names and their data types
 
-            for _, row in columns_df.iterrows():
+            for row in columns:
                 DB_INFORMATION_PROMPT += f"- {row['column_name']}: {row['data_type']} - {row['column_comment']}\n"
 
             
             # Get primary key for the current table
-            fk_query = fk_query.format(schema=schema_name, table_name=table_name)
+            fk_query = fk_query.format(schema=schema_name, table_name=table["table_name"])
             #fk_query_basemodel = SQLQueryInput(query=fk_query, return_format="dataframe")
-            fk_df =  sql_tool(query=fk_query, return_format="dataframe", is_server=True)
-            primary_key = fk_df['column_name'].tolist()
-
+            fk_df =  sql_tool(query=fk_query, is_server=True)
             DB_INFORMATION_PROMPT += "Primary Key:\n"
-            for key in primary_key:
+            for key in fk_df:
                 DB_INFORMATION_PROMPT += f"- {key}\n"
 
         save_prompt("DB_INFORMATION_PROMPT", DB_INFORMATION_PROMPT)
@@ -138,12 +131,11 @@ def get_db_structure(schema_name: str) -> DBStructureOutput:
     
 
 
-def sql_tool(query: str, return_format: str, is_server = False) -> Union[str, str]:
+def sql_tool(query: str,is_server = False) -> Union[str, str]:
     """Execute a SQL query on the PostgreSQL database.
     
     Args:
         query: the sql query that need to be execute
-        return_format: dataframe or csv, the format data of response
         
         
     Returns:
@@ -162,15 +154,9 @@ def sql_tool(query: str, return_format: str, is_server = False) -> Union[str, st
             connection.commit()
             df = pd.DataFrame()
         connection.close()
-    # Return in the requested format
-        if return_format.lower() == "csv":
-            csv_buffer = io.StringIO()
-            df.to_csv(csv_buffer, index=False)
-            return csv_buffer.getvalue()
-        else:
-            if is_server:
-                return df
-            return df.to_dict('records')
+        df = df.to_dict('records')
+        print(df)
+        return df
     except SQLAlchemyError as e:
         raise SQLAlchemyError(f"Database error: {str(e)}")
     

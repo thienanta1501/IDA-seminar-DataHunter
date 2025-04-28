@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 from mcp_server.tools.db_tools import get_db_structure, sql_tool
 from mcp_server.tools.ml_tools import build_ml_model
 from mcp_server.tools.python_tools import python_execute_tool
-from mcp_server.tools.visualization_tools import visualize_tool
+#from mcp_server.tools.visualization_tools import visualize_tool
 
 
 
@@ -59,10 +59,10 @@ class DataServer:
         )
         
         # Visualization tool
-        self.server.add_tool(
-            visualize_tool,
-            name="visualize_tool",
-        )
+        # self.server.add_tool(
+        #     visualize_tool,
+        #     name="visualize_tool",
+        # )
         
         # Python execution tool
         self.server.add_tool(
@@ -75,6 +75,7 @@ class DataServer:
             build_ml_model,
             name="build_ml_model",
         )
+
 
     def run(self, transport: str = "stdio") -> None:
         """Run the server.

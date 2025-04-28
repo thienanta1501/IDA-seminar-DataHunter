@@ -126,7 +126,7 @@ class DataAgentGraph:
                     name="get_db_structure"
                 )
 
-                print(f"DB Schema retrieved:\n{db_schema[:500]}...")
+                ###print(f"DB Schema retrieved:\n{db_schema[:500]}...")
                 # Return ONLY the updates: the new schema and the messages added in this step
                 return {
                     "db_schema": db_schema,
@@ -154,9 +154,9 @@ class DataAgentGraph:
         available data, DB schema, and workflow constraints.
         Invokes the LLM with tools. Returns only updates.
         """
-        print("--- PLANNING ACTION ---")
+        ###print("--- PLANNING ACTION ---")
         # --- Add this Debug Print ---
-        print(f"DEBUG plan_action: Received state['messages'] length: {len(state['messages'])}")
+        ###print(f"DEBUG plan_action: Received state['messages'] length: {len(state['messages'])}")
         if state['messages']:
              print(f"DEBUG plan_action: Last message type: {type(state['messages'][-1])}, content snippet: {str(state['messages'][-1].content)[:50]}...")
         # --- End Debug Print ---
@@ -192,12 +192,14 @@ class DataAgentGraph:
 
         print("Invoking LLM with messages:")
         # (Optional) Print condensed message history for debugging
-        for i, msg in enumerate(prompt_messages):
-             print(f"[{i}] {msg.type}: {str(msg.content)[:200]}...")
+        ###for i, msg in enumerate(prompt_messages):
+        ###    print(f"[{i}] {msg.type}: {str(msg.content)[:200]}...")
 
         ai_response = self.llm_with_tools.invoke(prompt_messages)
-        print(f"DEBUG plan_action: LLM response content: '{ai_response.content}'")
-        print(f"DEBUG plan_action: LLM response tool_calls: {getattr(ai_response, 'tool_calls', None)}")
+
+        ### print(f"DEBUG plan_action: LLM response content: '{ai_response.content}'")
+        ### print(f"DEBUG plan_action: LLM response tool_calls: {getattr(ai_response, 'tool_calls', None)}")
+
         # --- End Debug Print ---
         # Return the updates
         return {
@@ -207,7 +209,6 @@ class DataAgentGraph:
         }
 
     def human_in_the_loop_confirmation(self, state: AgentState) -> AgentState:
-        print(state)
         """Node to ask the user for confirmation before executing a proposed tool."""
         print("--- HUMAN IN THE LOOP ---")
         ai_message = state["messages"][-1]
@@ -411,16 +412,16 @@ class DataAgentGraph:
                 content = event["data"]["chunk"].content
                 if content:
                     print(content, end="", flush=True)
-            elif kind == "on_chat_model_end":
-                 if isinstance(event["data"].get("output"), AIMessage):
-                      print() # Newline after streaming ends
+            ###elif kind == "on_chat_model_end":
+            ###     if isinstance(event["data"].get("output"), AIMessage):
+            ###          print() # Newline after streaming ends
                  # Checkpointer handles saving the state including this message
 
             # Print tool results
-            elif kind == "on_tool_end":
-                print("\n--- Tool Result ---")
-                tool_output = event["data"].get("output") # ToolNode output format varies
-                print(f"Tool ({event['name']}) Output Snippet: {str(tool_output)[:200]}...")
+            ###elif kind == "on_tool_end":
+            ###    print("\n--- Tool Result ---")
+            ###    tool_output = event["data"].get("output") # ToolNode output format varies
+            ###    print(f"Tool ({event['name']}) Output Snippet: {str(tool_output)[:200]}...")
                 # Checkpointer handles saving the state including the ToolMessage(s)
 
         print("\n--- Graph Stream Ended ---")
@@ -429,11 +430,11 @@ class DataAgentGraph:
         try:
             final_state = await self.graph.aget_state(config)
             final_messages = final_state.values["messages"] # Access messages via .values
-            print(f"\nFinal State Messages (Thread: {thread_id}):")
-            for msg in final_messages:
-                role = msg.type.upper()
-                content_snippet = str(msg.content)
-                print(f"- {role}: {content_snippet}{'...' if len(str(msg.content)) > 150 else ''}")
+            # print(f"\nFinal State Messages (Thread: {thread_id}):")
+            # for msg in final_messages:
+            #     role = msg.type.upper()
+            #     content_snippet = str(msg.content)
+            #     print(f"- {role}: {content_snippet}{'...' if len(str(msg.content)) > 150 else ''}")
         except Exception as e:
             print(f"Error getting final state: {e}")
 
