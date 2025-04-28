@@ -18,6 +18,7 @@ from mcp_server.tools.charts.barhchart import BarhChart
 from mcp_server.tools.charts.boxplotchart import BoxPlotChart
 from mcp_server.tools.charts.histchart import HistChart
 from mcp_server.tools.charts.linechart import LineChart
+from mcp_server.tools.charts.piechart import PieChart
 
 
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
@@ -117,3 +118,24 @@ def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[st
 
     return link
 
+def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = None, explode: Optional[List[float]] = None,
+                   colors: Optional[List[str]] = None, autopct: Optional[str] = None, pctdistance: float = 0.6, 
+                   shadow: bool = False, labeldistance: float = 1.1, startangle: float = 0, radius: float = 1, 
+                   counterclock: bool = True, center: List[float] = [0, 0], frame: bool = False, 
+                   rotatelabels: bool = False, normalize: bool = True, title: str = "") -> str:
+    chart = PieChart(
+        explode=explode, labels=labels, colors=colors, autopct=autopct, pctdistance=pctdistance,
+        shadow=shadow, labeldistance=labeldistance, startangle=startangle, radius=radius,
+        counterclock=counterclock, center=center, frame=frame, rotatelabels=rotatelabels,
+        normalize=normalize, title=title
+    )
+
+    fig = chart.create_chart(x)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    image_bytes = buf.read()
+    link = post_image_to_host_server(image_bytes)
+
+    return link

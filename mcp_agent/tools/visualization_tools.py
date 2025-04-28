@@ -286,3 +286,61 @@ async def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Un
     except Exception as e:
         print(f"Exception when call tool draw line chart {e}")
         return f"Exception when call tool draw line chart {e}"
+    
+async def draw_pie_chart(x: List[Union[int, float]], labels: Optional[List[str]] = None, explode: Optional[List[float]] = None,
+                   colors: Optional[List[str]] = None, autopct: Optional[str] = None, pctdistance: float = 0.6, 
+                   shadow: bool = False, labeldistance: float = 1.1, startangle: float = 0, radius: float = 1, 
+                   counterclock: bool = True, center: List[float] = [0, 0], frame: bool = False, 
+                   rotatelabels: bool = False, normalize: bool = True, title: str = "") -> str:
+    """
+    Generate a pie chart from the given data and return it as a base64-encoded PNG string.
+
+    Parameters:
+        x (list): A list of numerical values for the pie chart (sizes of each slice).
+        labels (Optional[list]): A list of labels for each slice (default is None).
+        explode (Optional[list]): A list specifying the fraction of the radius to offset each slice (default is None).
+        colors (Optional[list]): A list of colors for each slice (default is None).
+        autopct (Optional[str]): String format for percentage display (default is None).
+        pctdistance (float): Distance between the center and the labels in the pie chart (default is 0.6).
+        shadow (bool): Whether to display a shadow behind the pie chart (default is False).
+        labeldistance (float): Distance between the center and the labels (default is 1.1).
+        startangle (float): The angle by which to rotate the start of the pie chart (default is 0).
+        radius (float): The radius of the pie chart (default is 1).
+        counterclock (bool): Whether to draw the pie chart counterclockwise (default is True).
+        center (tuple): A tuple specifying the x, y position of the pie chart (default is (0, 0)).
+        frame (bool): Whether to draw a frame around the pie chart (default is False).
+        rotatelabels (bool): Whether to rotate the labels to match the slice angle (default is False).
+        normalize (bool): Whether to normalize the data (default is True).
+        title (str): The title of the pie chart (default is "").
+
+    Returns:
+        A URL string linking to the generated pie chart image hosted online.
+    """
+    try:
+        mcp_client = await get_mcp_client()
+        tool_name = "draw_pie_chart"
+        params = {
+            "x": x,
+            "labels": labels,
+            "explode": explode,
+            "colors": colors,
+            "autopct": autopct,
+            "pctdistance": pctdistance,
+            "shadow": shadow,
+            "labeldistance": labeldistance,
+            "startangle": startangle,
+            "radius": radius,
+            "counterclock": counterclock,
+            "center": center,
+            "frame": frame,
+            "rotatelabels": rotatelabels,
+            "normalize": normalize,
+            "title": title
+        }
+
+        result = await mcp_client.process_query(tool_name, params=params)
+
+        return result
+    except Exception as e:
+        print(f"Exception when call tool draw pie chart {e}")
+        return f"Exception when call tool draw pie chart {e}"

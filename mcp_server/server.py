@@ -16,7 +16,7 @@ from mcp_server.tools.db_tools import get_db_structure, sql_tool
 from mcp_server.tools.ml_tools import build_ml_model
 from mcp_server.tools.python_tools import python_execute_tool
 from mcp_server.tools.visualization_tools import draw_bar_chart, draw_barh_chart, draw_boxplot_chart, \
-draw_hist_chart, draw_line_chart
+draw_hist_chart, draw_line_chart, draw_pie_chart
 
 
 
@@ -85,7 +85,12 @@ class DataServer:
             draw_line_chart,
             name="draw_line_chart"
         )
-        
+
+        self.server.add_tool(
+            draw_pie_chart,
+            name="draw_pie_chart"
+        )
+
         # Python execution tool
         self.server.add_tool(
             python_execute_tool,
