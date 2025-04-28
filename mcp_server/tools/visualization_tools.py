@@ -12,6 +12,7 @@ import pandas as pd
 from mcp.server.fastmcp import Context
 from mcp.server.fastmcp.utilities.types import Image
 from pydantic import BaseModel, Field
+from datetime import datetime
 from ..utils.index import post_image_to_host_server
 from mcp_server.tools.charts.barchart import BarChart
 from mcp_server.tools.charts.barhchart import BarhChart
@@ -20,6 +21,7 @@ from mcp_server.tools.charts.histchart import HistChart
 from mcp_server.tools.charts.linechart import LineChart
 from mcp_server.tools.charts.piechart import PieChart
 from mcp_server.tools.charts.scatterchart import ScatterChart
+from mcp_server.tools.charts.pearson_correlation import PearsonCorrelation
 
 
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
@@ -196,4 +198,32 @@ def draw_scatter_chart(
     image_bytes = buf.read()
     link = post_image_to_host_server(image_bytes)
 
+    return link
+
+def draw_pearson_correlation_chart(data: Dict[str, List[Union[int, float, str, datetime]]], title: str) -> str:
+    """
+    Generates a Pearson correlation chart from the provided data and uploads the chart image to a hosting server.
+
+    Args:
+        data (Dict[str, List[Union[int, float, str, datetime]]]): 
+            A dictionary where each key is a column name and each value is a list of values.
+            The values can be integers, floats, strings, or datetime objects.
+        title (str): 
+            The title to be displayed on the chart.
+
+    Returns:
+        str: 
+            A URL linking to the uploaded image of the generated correlation chart.
+
+    Notes:
+        - If non-numeric values (e.g., strings or datetimes) are provided, they should be preprocessed or encoded appropriately
+          inside the PearsonCorrelation.create_chart method, as Pearson correlation requires numerical inputs.
+    """
+    chart_object = PearsonCorrelation(title=title)
+    fig = chart_object.create_chart(data)
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    image_bytes = buf.read()
+    link = post_image_to_host_server(image_bytes)
     return link

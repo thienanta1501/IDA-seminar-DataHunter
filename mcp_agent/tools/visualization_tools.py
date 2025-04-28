@@ -7,6 +7,7 @@ visualization tools.
 from typing import Any, Dict, List, Optional, Union
 #import aiohttp
 from langchain.tools import BaseTool
+from datetime import datetime
 from mcp_agent.mcp_client import get_mcp_client
 
 async def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
@@ -406,3 +407,37 @@ async def draw_scatter_chart(
     except Exception as e:
         print(f"Exception when call tool draw scatter chart {e}")
         return f"Exception when call tool draw scatter chart {e}"
+    
+async def draw_pearson_correlation_chart(data: Dict[str, List[Union[int, float, str, datetime]]], title: str) -> str:
+    """
+    Generates a Pearson correlation chart from the provided data and uploads the chart image to a hosting server.
+
+    Args:
+        data (Dict[str, List[Union[int, float, str, datetime]]]): 
+            A dictionary where each key is a column name and each value is a list of values.
+            The values can be integers, floats, strings, or datetime objects.
+        title (str): 
+            The title to be displayed on the chart.
+
+    Returns:
+        str: 
+            A URL linking to the uploaded image of the generated correlation chart.
+
+    Notes:
+        - If non-numeric values (e.g., strings or datetimes) are provided, they should be preprocessed or encoded appropriately
+          inside the PearsonCorrelation.create_chart method, as Pearson correlation requires numerical inputs.
+    """
+
+    try:
+        mcp_client = await get_mcp_client()
+        tool_name = "draw_pearson_correlation_chart"
+        params = {
+            "data": data,
+            "title": title
+        }
+        result = await mcp_client.process_query(tool_name, params=params)
+
+        return result
+    except Exception as e:
+        print(f"Exception when call tool draw pearson correlation chart {e}")
+        return f"Exception when call tool draw pearson correlation chart {e}"
