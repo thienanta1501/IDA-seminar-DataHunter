@@ -228,3 +228,61 @@ async def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]]
     except Exception as e:
         print(f"Exception when call tool draw hist chart {e}")
         return f"Exception when call tool draw hist chart {e}"
+    
+async def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
+                    linestyle: str = "-", linewidth: float = 2, marker: Optional[str] = None,
+                    color: Optional[str] = None, scalex: bool = True, scaley: bool = True) -> str:
+    """
+    Draws a multi-line chart using the given x-axis values and multiple y-axis data series,
+    and returns the chart image as a PNG binary string.
+
+    Args:
+        x_data (List[Union[str, int, float]]): 
+            Values for the x-axis (shared by all lines).
+        y_data (Dict[Union[str], List[Union[float, int]]]): 
+            Dictionary mapping labels to y-axis values for each line to be plotted.
+            Each key is a line label, and each value is a list of y-values corresponding to x_data.
+        title (str, optional): 
+            Title of the chart.
+        x_label (str, optional): 
+            Label for the x-axis.
+        y_label (str, optional): 
+            Label for the y-axis.
+        linestyle (str, optional): 
+            Line style (default is '-', a solid line).
+        linewidth (float, optional): 
+            Width of the lines.
+        marker (Optional[str], optional): 
+            Marker style for data points (e.g., 'o', 's', '^').
+        color (Optional[str], optional): 
+            Color or list of colors for each line.
+        scalex (bool, optional): 
+            Whether to auto-scale the x-axis.
+        scaley (bool, optional): 
+            Whether to auto-scale the y-axis.
+
+    Returns:
+        A URL string linking to the generated line chart image hosted online.
+    """
+    try:
+        mcp_client = await get_mcp_client()
+        tool_name = "draw_line_chart"
+        params = {
+            "x_data": x_data,
+            "y_data": y_data,
+            "title": title,
+            "x_label": x_label,
+            "y_label": y_label,
+            "linestyle": linestyle,
+            "linewidth": linewidth,
+            "marker": marker,
+            "color": color,
+            "scalex": scalex,
+            "scaley": scaley
+        }
+
+        result = await mcp_client.process_query(tool_name, params=params)
+        return result
+    except Exception as e:
+        print(f"Exception when call tool draw line chart {e}")
+        return f"Exception when call tool draw line chart {e}"

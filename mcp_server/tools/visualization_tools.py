@@ -17,6 +17,8 @@ from mcp_server.tools.charts.barchart import BarChart
 from mcp_server.tools.charts.barhchart import BarhChart
 from mcp_server.tools.charts.boxplotchart import BoxPlotChart
 from mcp_server.tools.charts.histchart import HistChart
+from mcp_server.tools.charts.linechart import LineChart
+
 
 def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str, list], title: str = "", x_label: str = "", y_label: str = "", color: str = "skyblue",
                    type: str = "simple") -> str:
@@ -92,6 +94,24 @@ def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]] = Non
     fig.savefig(buf, format='png')
     buf.seek(0)
 
+    image_bytes = buf.read()
+    link = post_image_to_host_server(image_bytes)
+
+    return link
+
+def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
+                    linestyle: str = "-", linewidth: float = 2, marker: Optional[str] = None,
+                    color: Optional[str] = None, scalex: bool = True, scaley: bool = True) -> str:
+    chart = LineChart(
+        title=title, x_label=x_label, y_label=y_label,
+        linestyle=linestyle, linewidth=linewidth, marker=marker,
+        color=color, scalex=scalex, scaley=scaley
+    )
+    fig = chart.create_chart(x_data=x_data, y_data=y_data)
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
     image_bytes = buf.read()
     link = post_image_to_host_server(image_bytes)
 
