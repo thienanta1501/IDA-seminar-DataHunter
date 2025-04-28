@@ -195,7 +195,7 @@ async def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]]
         category (dict): A dictionary where keys are categories and values are lists of numeric values for each group.
         data (list): A list of numeric values for a single dataset (if category is not provided).
         bins (int): The number of histogram bins (default is 10).
-        title (str): The title of the chart.
+        title (str): The title of the chart. Always name this field if data is not none
         x_label (str): The label for the x-axis.
         y_label (str): The label for the y-axis.
         color (Optional[str or list]): The color of the bars (default is None). Can be a single color or a list of colors.

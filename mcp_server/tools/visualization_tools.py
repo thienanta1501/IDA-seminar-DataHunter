@@ -83,7 +83,6 @@ def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]] = Non
             alpha=alpha, category=category, stacked=stacked
         )
     elif data:
-        print("Vao nhanh data")
         chart = HistChart(
             title=title, x_label=x_label, y_label=y_label, color=color, bins=bins,
             alpha=alpha, stacked=stacked

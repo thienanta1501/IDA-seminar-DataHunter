@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+from scipy.stats import skew
 
 class HistChart:
     def __init__(self, title="", x_label="", y_label="", color="green", bins=10,
@@ -17,6 +18,7 @@ class HistChart:
 
     def create_chart(self, data):
         fig, ax = plt.subplots()
+        title = self.title
 
         # Nếu có nhiều nhóm dữ liệu (theo category)
         if self.category:
@@ -42,8 +44,6 @@ class HistChart:
                     histtype=self.histtype,
                     stacked=self.stacked,
                     edgecolor='black')
-
-            ax.legend()
         else:
             # Dữ liệu đơn
             ax.hist(data,
@@ -54,9 +54,11 @@ class HistChart:
                     histtype=self.histtype,
                     edgecolor='black', label="histogram")
             sns.kdeplot(data, ax=ax, color=self.color, label="kde")
+            skewness_value = skew(data)
+            title = title + f"\n Skewness: {skewness_value}"
             ax.legend()
 
-        ax.set_title(self.title)
+        ax.set_title(title)
         ax.set_xlabel(self.x_label)
         ax.set_ylabel(self.y_label)
 
