@@ -15,8 +15,10 @@ from pydantic import BaseModel, Field
 from mcp_server.tools.db_tools import get_db_structure, sql_tool
 from mcp_server.tools.ml_tools import build_ml_model
 from mcp_server.tools.python_tools import python_execute_tool
-#from mcp_server.tools.visualization_tools import visualize_tool
 
+
+from mcp_server.tools.visualization_tools import draw_bar_chart, draw_barh_chart, draw_boxplot_chart, \
+draw_hist_chart, draw_line_chart, draw_pie_chart, draw_scatter_chart, draw_pearson_correlation_chart
 
 
 class DataServer:
@@ -57,13 +59,49 @@ class DataServer:
             sql_tool,
             name="sql_tool"
         )
+
+        # Visualization tools
+
+        self.server.add_tool(
+            draw_bar_chart,
+            name="draw_bar_chart"
+        )
+
+        self.server.add_tool(
+            draw_barh_chart,
+            name="draw_barh_chart"
+        )
+
+        self.server.add_tool(
+            draw_boxplot_chart,
+            name="draw_boxplot_chart"
+        )
         
-        # Visualization tool
-        # self.server.add_tool(
-        #     visualize_tool,
-        #     name="visualize_tool",
-        # )
-        
+        self.server.add_tool(
+            draw_hist_chart,
+            name = "draw_hist_chart"
+        )
+
+        self.server.add_tool(
+            draw_line_chart,
+            name="draw_line_chart"
+        )
+
+        self.server.add_tool(
+            draw_pie_chart,
+            name="draw_pie_chart"
+        )
+
+        self.server.add_tool(
+            draw_scatter_chart,
+            name="draw_scatter_chart"
+        )
+
+        self.server.add_tool(
+            draw_pearson_correlation_chart,
+            name="draw_pearson_correlation_chart"
+        )
+
         # Python execution tool
         self.server.add_tool(
             python_execute_tool,

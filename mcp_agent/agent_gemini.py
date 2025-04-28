@@ -24,6 +24,8 @@ from langgraph.checkpoint.memory import MemorySaver # Added MemorySaver
 #from mcp_agent.tools.visualization_tools import VisualizationTool
 from mcp_agent.mcp_client import MCPClient
 from mcp_agent.tools.db_tools import get_db_structure, sql_tool
+from mcp_agent.tools.visualization_tools import draw_bar_chart, draw_barh_chart, draw_boxplot_chart, \
+draw_hist_chart, draw_line_chart, draw_pie_chart, draw_scatter_chart, draw_pearson_correlation_chart
 from mcp_agent.mock_test_agent import mock_build_ml_model, mock_get_db_structure, mock_sql_tool, mock_visualize_tool
 
 # --- Removed Database Setup for Chat History ---
@@ -84,7 +86,15 @@ class DataAgentGraph:
             get_db_structure,
             sql_tool,
             mock_visualize_tool,
-            mock_build_ml_model
+            mock_build_ml_model,
+            draw_bar_chart,
+            draw_barh_chart,
+            draw_boxplot_chart,
+            draw_hist_chart,
+            draw_line_chart,
+            draw_pie_chart,
+            draw_scatter_chart,
+            draw_pearson_correlation_chart
         ]
 
     # --- Graph Nodes ---

@@ -11,6 +11,9 @@ from pydantic import BaseModel, Field
 from sqlalchemy import create_engine, inspect, text
 from mcp_server.prompt.prompt import get_prompt, save_prompt
 import os 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def create_db_engine(connection_string: str):
     try:
@@ -26,8 +29,9 @@ def create_db_engine(connection_string: str):
 engine = None
 def get_db_engine():
     global engine
+    db_url = os.getenv("DATABASE_URL")
     if engine is None:
-        engine = create_db_engine(connection_string="postgresql://anonymous:9h0IKVdZ6Q9SDi29rjALa7dajOfpjwMz@dpg-cvv8ok7gi27c73cp0380-a.singapore-postgres.render.com/da_postgres_db")
+        engine = create_db_engine(connection_string=db_url)
     return engine
 
 class SQLQueryInput(BaseModel):
