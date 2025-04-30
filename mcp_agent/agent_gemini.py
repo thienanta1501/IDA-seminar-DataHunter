@@ -29,14 +29,31 @@ from mcp_agent.tools.db_tools import get_db_structure, sql_tool
 from mcp_agent.tools.visualization_tools import draw_bar_chart, draw_barh_chart, draw_boxplot_chart, \
 draw_hist_chart, draw_line_chart, draw_pie_chart, draw_scatter_chart, draw_pearson_correlation_chart
 from mcp_agent.mock_test_agent import mock_build_ml_model, mock_get_db_structure, mock_sql_tool, mock_visualize_tool
-
+from uuid import uuid4
 # --- Removed Database Setup for Chat History ---
 # DB_FILE = "data_agent_history.db" # Removed
 # init_db() and log_message_to_db() functions are removed
+def reduce_messages(left: Sequence[BaseMessage], right: Sequence[BaseMessage]) -> Sequence[BaseMessage]:
+    # assign ids to messages that don't have them
+    for message in right:
+        if not message.id:
+            message.id = str(uuid4())
+    # merge the new messages with the existing messages
+    merged = left.copy()
+    for message in right:
+        for i, existing in enumerate(merged):
+            # replace any existing messages with the same id
+            if existing.id == message.id:
+                merged[i] = message
+                break
+        else:
+            # append any new messages to the end
+            merged.append(message)
+    return merged
 
 class AgentState(TypedDict):
     # Explicitly tell LangGraph to append messages using operator.add
-    messages: Annotated[Sequence[BaseMessage], operator.add]
+    messages: Annotated[Sequence[BaseMessage], reduce_messages]
     thread_id: Annotated[str, "The unique ID for the conversation thread"]
     db_schema: Annotated[Optional[str], "The database schema description"]
     data_retrieved: Annotated[bool, "Flag indicating if data has been successfully retrieved via SQLTool"]
@@ -324,6 +341,7 @@ class DataAgentGraph:
         print("--- ROUTING AFTER PLANNING ---")
         last_message = state["messages"][-1]
         if isinstance(last_message, AIMessage) and last_message.tool_calls:
+            print("======after planning, is ai message=================")
             if state["user_confirmation"] == "yes":
                 print("Routing to execute tool")
                 return "execute_tool"
