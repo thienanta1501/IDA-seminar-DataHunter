@@ -159,7 +159,6 @@ def sql_tool(query: str,is_server = False) -> Union[str, str]:
             df = pd.DataFrame()
         connection.close()
         df = df.to_dict('records')
-        print(df)
         return df
     except SQLAlchemyError as e:
         raise SQLAlchemyError(f"Database error: {str(e)}")

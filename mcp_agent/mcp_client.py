@@ -38,16 +38,25 @@ class MCPClient:
 
     async def cleanup(self):
         """Properly clean up the session and streams"""
-        if self._session_context:
-            await self._session_context.__aexit__(None, None, None)
-        if self._streams_context:
-            await self._streams_context.__aexit__(None, None, None)
+        if hasattr(self, "_session_context") and self._session_context is not None:
+            try:
+                await self._session_context.__aexit__(None, None, None)
+            except Exception as e:
+                print(f"Error closing session_context: {e}")
+
+        if hasattr(self, "_streams_context") and self._streams_context is not None:
+            try:
+                await self._streams_context.__aexit__(None, None, None)
+            except Exception as e:
+                print(f"Error closing streams_context: {e}")
+
+        self._session_context = None
+        self._streams_context = None
 
     async def process_query(self, query: str, params: dict = None) -> str:
 
         result = await self.session.call_tool(query, params)
-                
-        print(f"Tool result: {result}")
+
         return result
 
 
@@ -60,3 +69,11 @@ async def get_mcp_client():
         mcp_client = MCPClient()
         await mcp_client.connect_to_sse_server(server_url="http://localhost:8000/sse")
     return mcp_client
+
+async def delete_mcp_client():
+    global mcp_client
+    if mcp_client is not None:
+        await mcp_client.cleanup()
+        mcp_client = None
+
+

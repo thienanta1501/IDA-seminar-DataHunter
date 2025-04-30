@@ -49,7 +49,6 @@ def get_db_info(connection_string):
     """Get database information asynchronously."""
     engine = create_db_engine(connection_string)
     structure = get_db_structure(engine, "public")
-    print(structure)
 
 def main():
     """Main entry point."""

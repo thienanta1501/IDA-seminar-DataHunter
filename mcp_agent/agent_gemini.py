@@ -15,8 +15,10 @@ from pydantic import BaseModel, Field
 
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
+from langgraph.types import interrupt
 # from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver # Removed
 from langgraph.checkpoint.memory import MemorySaver # Added MemorySaver
+
 
 # Assuming these are correctly defined elsewhere or mocked as before
 #from mcp_agent.tools.db_tools import DBStructureTool, SQLTool
@@ -39,8 +41,7 @@ class AgentState(TypedDict):
     db_schema: Annotated[Optional[str], "The database schema description"]
     data_retrieved: Annotated[bool, "Flag indicating if data has been successfully retrieved via SQLTool"]
     proposed_tool_call: Annotated[Optional[Dict], "The tool call the agent proposes to execute"]
-    user_confirmation: Annotated[Optional[str], "User response ('yes'/'no') to the proposed tool call"]
-
+    user_confirmation: Annotated[str, "User response ('yes'/'no') to the proposed tool call"]
     
 # --- DataAgentGraph Class ---
 class DataAgentGraph:
@@ -58,25 +59,23 @@ class DataAgentGraph:
         """
         self.llm = llm
         self.server_url = server_url
-        # init_db() # Removed - No separate DB init needed for MemorySaver
 
         # Create tools
         self.tools = self._create_tools()
         self.llm_with_tools = self.llm.bind_tools(self.tools)
 
-        # Memory for conversation state using in-memory backend
         self.memory = MemorySaver() # Use MemorySaver
 
         # Create the graph
         self.graph = self._create_graph()
 
         # Initialize MCPClient (optional)
-        try:
-            self.mcp_client = MCPClient()
-            # self.mcp_client.connect_to_sse_server(self.server_url)
-        except NameError:
-            print("MCPClient not available/mocked, skipping connection.")
-            self.mcp_client = None
+        # try:
+        #     self.mcp_client = MCPClient()
+        #     # self.mcp_client.connect_to_sse_server(self.server_url)
+        # except NameError:
+        #     print("MCPClient not available/mocked, skipping connection.")
+        #     self.mcp_client = None
 
         #print(self.tools)
     def _create_tools(self) -> list:
@@ -140,7 +139,7 @@ class DataAgentGraph:
                 # Return ONLY the updates: the new schema and the messages added in this step
                 return {
                     "db_schema": db_schema,
-                    "messages": [ai_message, tool_message] 
+                    "messages": [ai_message, tool_message],
                 }
             except Exception as e:
                 print(f"Error fetching DB Schema: {e}")
@@ -214,8 +213,7 @@ class DataAgentGraph:
         # Return the updates
         return {
             "messages": [ai_response], 
-            "proposed_tool_call": None, 
-            "user_confirmation": None
+            "user_confirmation": "no"
         }
 
     def human_in_the_loop_confirmation(self, state: AgentState) -> AgentState:
@@ -254,33 +252,35 @@ class DataAgentGraph:
         print(json.dumps(tool_args, indent=2))
         print(f"(Internal Tool Call ID: {tool_call_id})")
 
-        while True:
-            confirmation = input("Do you want to proceed with this action? (yes/no): ").strip().lower()
-            if confirmation in ["yes", "no"]:
-                break
-            else:
-                print("Invalid input. Please enter 'yes' or 'no'.")
+        # feedback = interrupt("Do you want to proceed with this action? (yes/no): ")
 
-        if confirmation == "no":
-            print("User rejected the action.")
-            state["messages"].pop()
-            rejection_message = HumanMessage(content="No, I don't want to proceed with that action.")
-            clarification_request = AIMessage(content="Okay, I won't proceed with that tool call. How would you like to modify the request, or what should I do instead?")
-            # Return state update: add rejection/clarification messages, clear proposal
-            return {
-                 "messages": [rejection_message, clarification_request], # Append these
-                 "proposed_tool_call": None,
-                 "user_confirmation": "no"
-             }
-        else: # confirmation == "yes"
-            print("User confirmed the action.")
-            # Return state update: store confirmed call, set confirmation flag
-            # No new messages needed here, just state flags.
-            return {
-                 "proposed_tool_call": proposed_tool_call_details, # Update this field
-                 "user_confirmation": "yes"
-                 # No message update needed here
-             }
+        # while True:
+        #     confirmation = input("Do you want to proceed with this action? (yes/no): ").strip().lower()
+        #     if confirmation in ["yes", "no"]:
+        #         break
+        #     else:
+        #         print("Invalid input. Please enter 'yes' or 'no'.")
+
+        # if confirmation == "no":
+        #     print("User rejected the action.")
+        #     state["messages"].pop()
+        #     rejection_message = HumanMessage(content="No, I don't want to proceed with that action.")
+        #     clarification_request = AIMessage(content="Okay, I won't proceed with that tool call. How would you like to modify the request, or what should I do instead?")
+        #     # Return state update: add rejection/clarification messages, clear proposal
+        #     return {
+        #          "messages": [rejection_message, clarification_request], # Append these
+        #          "proposed_tool_call": None,
+        #          "user_confirmation": "no"
+        #      }
+        # else: # confirmation == "yes"
+        #     print("User confirmed the action.")
+        #     # Return state update: store confirmed call, set confirmation flag
+        #     # No new messages needed here, just state flags.
+        return {
+                "proposed_tool_call": proposed_tool_call_details, # Update this field
+                "user_confirmation": "yes"
+                # No message update needed here
+            }
 
     def check_sql_success(self, state: AgentState) -> AgentState:
         """Node to update data_retrieved flag after sql_tool execution."""
@@ -324,8 +324,12 @@ class DataAgentGraph:
         print("--- ROUTING AFTER PLANNING ---")
         last_message = state["messages"][-1]
         if isinstance(last_message, AIMessage) and last_message.tool_calls:
-            print("Routing to Human Confirmation")
-            return "confirm_tool"
+            if state["user_confirmation"] == "yes":
+                print("Routing to execute tool")
+                return "execute_tool"
+            else:
+                print("Routing to END (AI provided direct response or clarification)")
+                return END
         else:
             print("Routing to END (AI provided direct response or clarification)")
             return END
@@ -364,27 +368,21 @@ class DataAgentGraph:
         # Add nodes
         workflow.add_node("check_and_fetch_schema", self.check_initial_state)
         workflow.add_node("plan_action", self.plan_action)
-        workflow.add_node("confirm_tool", self.human_in_the_loop_confirmation)
         workflow.add_node("execute_tool", tool_node)
         workflow.add_node("check_sql_success", self.check_sql_success)
 
         # Set entry point
         workflow.set_entry_point("check_and_fetch_schema")
-
-        # Define edges
         workflow.add_edge("check_and_fetch_schema", "plan_action")
 
+        # Define edges
         workflow.add_conditional_edges(
             "plan_action",
             self.route_after_planning,
-            {"confirm_tool": "confirm_tool", END: END}
+            {"execute_tool": "execute_tool", END: END}
         )
 
-        workflow.add_conditional_edges(
-            "confirm_tool",
-            self.route_after_confirmation,
-            {"execute_tool": "execute_tool", "plan_action": "plan_action", END: END}
-        )
+
 
         # After ToolNode executes, check if it was SQL and update state
         workflow.add_edge("execute_tool", "check_sql_success")
@@ -393,60 +391,8 @@ class DataAgentGraph:
         workflow.add_edge("check_sql_success", "plan_action")
 
         # Compile the graph *with the checkpointer*
-        return workflow.compile(checkpointer=self.memory) # Pass the MemorySaver instance here
+        return workflow.compile(
+            checkpointer=self.memory,
+            interrupt_after=["plan_action"]
+        ) # Pass the MemorySaver instance here
 
-    # --- Running the Agent ---
-    async def run_conversation(self, initial_query: str, thread_id: Optional[str] = None):
-        """Starts or continues a conversation flow using MemorySaver."""
-        if thread_id is None:
-            thread_id = str(uuid.uuid4())
-            print(f"\nStarting new conversation thread: {thread_id}")
-            # No need to define initial state dict here, checkpointer handles it.
-        else:
-            print(f"\nContinuing conversation thread: {thread_id}")
-
-        config = {"configurable": {"thread_id": thread_id}}
-
-        # The input to the graph stream should be the new message(s)
-        current_input = {"messages": [HumanMessage(content=initial_query)]}
-        # log_message_to_db(thread_id, current_input["messages"][0]) # Removed log
-
-        print("--- Invoking Graph ---")
-        async for event in self.graph.astream_events(current_input, config=config, version="v2"):
-            kind = event["event"]
-            tags = event.get("tags", [])
-            # print(f"Event: {kind}, Name: {event['name']}, Tags: {tags}, Data: {event['data']}") # More detailed debug
-
-            # Print streaming AI responses
-            if kind == "on_chat_model_stream":
-                content = event["data"]["chunk"].content
-                if content:
-                    print(content, end="", flush=True)
-            ###elif kind == "on_chat_model_end":
-            ###     if isinstance(event["data"].get("output"), AIMessage):
-            ###          print() # Newline after streaming ends
-                 # Checkpointer handles saving the state including this message
-
-            # Print tool results
-            ###elif kind == "on_tool_end":
-            ###    print("\n--- Tool Result ---")
-            ###    tool_output = event["data"].get("output") # ToolNode output format varies
-            ###    print(f"Tool ({event['name']}) Output Snippet: {str(tool_output)[:200]}...")
-                # Checkpointer handles saving the state including the ToolMessage(s)
-
-        print("\n--- Graph Stream Ended ---")
-
-        # Retrieve final state from the checkpointer (MemorySaver)
-        try:
-            final_state = await self.graph.aget_state(config)
-            final_messages = final_state.values["messages"] # Access messages via .values
-            # print(f"\nFinal State Messages (Thread: {thread_id}):")
-            # for msg in final_messages:
-            #     role = msg.type.upper()
-            #     content_snippet = str(msg.content)
-            #     print(f"- {role}: {content_snippet}{'...' if len(str(msg.content)) > 150 else ''}")
-        except Exception as e:
-            print(f"Error getting final state: {e}")
-
-        print(f"--- Conversation Turn Ended (Thread: {thread_id}) ---")
-        return thread_id
