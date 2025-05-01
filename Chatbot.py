@@ -146,8 +146,8 @@ def handle_yes_click():
             bot_message, bot_response, response, _ = result
             
             if isinstance(bot_response, Image.Image):
-                st.markdown("📊 Your chart:")
-                st.image(bot_response, use_container_width=True)
+                # st.markdown("📊 Your chart:")
+                # st.image(bot_response, use_container_width=True)
                 st.session_state.chart_data = st.session_state.get("chart_data", []) + [bot_response]
             elif isinstance(bot_response, str):
                 try:
@@ -159,7 +159,7 @@ def handle_yes_click():
                 except Exception as e:
                     st.write(f"Error processing response: {e}")
             
-            display_message(bot_message, "bot")
+            # display_message(bot_message, "bot")
             st.session_state.chat_history.append((st.session_state.last_user_input, bot_response, bot_message))
         else:
             display_message("⚠️ Something went wrong after confirmation.", "bot")
@@ -176,7 +176,7 @@ def handle_no_click():
         
         if isinstance(result, tuple) and len(result) == 4:
             bot_response, _, _, _ = result
-            display_message(bot_response, "bot")
+            # display_message(bot_response, "bot")
             st.session_state.chat_history.append((st.session_state.last_user_input, None, bot_response))
         else:
             display_message("⚠️ Something went wrong after rejection.", "bot")

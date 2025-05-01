@@ -23,22 +23,15 @@ def get_last_tool_message_and_last_ai_message(response):
         print(last_tool_message)
     return last_message, last_tool_message
 
-# def get_last_tool_message_and_last_ai_message(response):
-#     messages = response["messages"]
+def get_json_sql_result(input_json_string):
+    match = re.search(r'\[.*\]', input_json_string)
+
+    if match:
+        json_array_str = match.group(0)
+        return json_array_str
     
-#     last_ai_message = None
-#     last_tool_message = None
+    return None
 
-#     # Duyệt ngược để tìm AIMessage cuối cùng và ToolMessage gần đó
-#     for msg in reversed(messages):
-#         if last_ai_message is None and isinstance(msg, AIMessage):
-#             last_ai_message = msg
-#         if last_tool_message is None and isinstance(msg, ToolMessage):
-#             last_tool_message = msg
-#         if last_ai_message and last_tool_message:
-#             break
-
-#     return last_ai_message, last_tool_message
 
 def get_url_from_str(input_string):
     print("Da vao get url")
@@ -63,13 +56,31 @@ def get_image_from_url(image_url):
     print("Thuc hien xong chuyen doi")
     return image
 
+def handle_image_result(returned_content):
+    url = get_url_from_str(returned_content)
+    image = get_image_from_url(url)
+    return image
+
 def handle_user_accept_tool(input_from_user, state):
     state.values["user_confirmation"] = input_from_user
     if input_from_user == "no":
-        state.values["messages"].pop()
         reply_aimessages = AIMessage(content="I will not use this tool")
-        state.values["messages"].append(reply_aimessages)
+
+        for key, value in reply_aimessages.__dict__.items():
+            if key != 'id':
+                setattr(state.values["messages"][-1], key, value)
     return state
+
+handle_result_for_each_tool = {
+    "draw_bar_chart": handle_image_result,
+    "draw_barh_chart": handle_image_result,
+    "draw_boxplot_chart": handle_image_result,
+    "draw_hist_chart": handle_image_result,
+    "draw_line_chart": handle_image_result,
+    "draw_pie_chart": handle_image_result,
+    "draw_scatter_chart": handle_image_result,
+    "draw_pearson_correlation_chart": handle_image_result
+}
 
 # --- Example Usage ---
 async def ask_agent(agent, input_prompt: str , thread, new_state = None):
@@ -77,6 +88,7 @@ async def ask_agent(agent, input_prompt: str , thread, new_state = None):
         messages = [HumanMessage(content=input_prompt)]
     else:
         messages = None
+    print(f"Input prompt: {input_prompt}")
 
     if new_state:
         await agent.graph.aupdate_state(thread, new_state.values)
@@ -97,12 +109,21 @@ async def ask_agent(agent, input_prompt: str , thread, new_state = None):
         return state, "confirm"
     
     last_message, last_tool_message = get_last_tool_message_and_last_ai_message(response)
-    url = get_url_from_str(last_tool_message.content)
-    image = get_image_from_url(url)
     bot_response = last_message.content
-    print("URL: ", url)
+    print(last_tool_message)
+
+    tool_result = None
+
+    if last_tool_message:
+        tool_name = last_tool_message.name
+        tool_content = last_tool_message.content
+        
+        if tool_name in handle_result_for_each_tool:
+            handle_func = handle_result_for_each_tool[tool_name]
+            tool_result = handle_func(tool_content)
+
     
-    return bot_response, image, response, "END"
+    return bot_response, tool_result, response, "END"
 
 
 

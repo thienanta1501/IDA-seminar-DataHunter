@@ -214,7 +214,12 @@ class DataAgentGraph:
                             """
 
         # Construct prompt messages using the messages from the *current* state
-        prompt_messages = [SystemMessage(content=system_prompt)] + list(state["messages"])
+        prompt_messages = [SystemMessage(content=system_prompt)] + state["messages"]
+        len_prompt = len(prompt_messages)
+        print("Trong plan")
+        if len_prompt > 5:
+            attributes = dir(prompt_messages[4])
+            print(type(attributes))
 
         print("Invoking LLM with messages:")
         # (Optional) Print condensed message history for debugging
