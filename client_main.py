@@ -7,6 +7,7 @@ import re
 import requests
 from PIL import Image
 import io
+import json
 
 load_dotenv(dotenv_path="mcp_agent/.env")
     
@@ -20,10 +21,9 @@ def get_last_tool_message_and_last_ai_message(response):
     if isinstance(response["messages"][-2], ToolMessage):
         print("Chui vao Tool Message")
         last_tool_message = response["messages"][-2]
-        print(last_tool_message)
     return last_message, last_tool_message
 
-def get_json_sql_result(input_json_string):
+def get_json_string_sql_result(input_json_string):
     match = re.search(r'\[.*\]', input_json_string)
 
     if match:
@@ -31,6 +31,11 @@ def get_json_sql_result(input_json_string):
         return json_array_str
     
     return None
+
+def handle_json_result(returned_content):
+    json_string = get_json_string_sql_result(returned_content)
+    result = json.loads(json_string)
+    return result
 
 
 def get_url_from_str(input_string):
@@ -79,7 +84,8 @@ handle_result_for_each_tool = {
     "draw_line_chart": handle_image_result,
     "draw_pie_chart": handle_image_result,
     "draw_scatter_chart": handle_image_result,
-    "draw_pearson_correlation_chart": handle_image_result
+    "draw_pearson_correlation_chart": handle_image_result,
+    "sql_tool": handle_json_result
 }
 
 # --- Example Usage ---
@@ -110,7 +116,7 @@ async def ask_agent(agent, input_prompt: str , thread, new_state = None):
     
     last_message, last_tool_message = get_last_tool_message_and_last_ai_message(response)
     bot_response = last_message.content
-    print(last_tool_message)
+
 
     tool_result = None
 

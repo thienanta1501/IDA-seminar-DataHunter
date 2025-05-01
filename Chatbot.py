@@ -161,6 +161,18 @@ def handle_yes_click():
             
             # display_message(bot_message, "bot")
             st.session_state.chat_history.append((st.session_state.last_user_input, bot_response, bot_message))
+        elif isinstance(result, tuple) and len(result) == 2:
+            st.session_state.waiting_confirmation = True
+            st.session_state.last_user_input = user_input
+            st.session_state.current_state = state
+            st.warning("⚠️ The assistant wants to use a tool. Do you allow it?")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.button("✅ Yes, proceed!", on_click=handle_yes_click, key="yes_button")
+
+            with col2:
+                st.button("❌ No, cancel!", on_click=handle_no_click, key="no_button")
         else:
             display_message("⚠️ Something went wrong after confirmation.", "bot")
     except Exception as e:
