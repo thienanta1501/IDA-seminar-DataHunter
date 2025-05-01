@@ -50,7 +50,9 @@ async def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str,
         A URL string linking to the generated bar chart image hosted online.
     """
     try:
+        print("Da vao tool ve bar chart")
         mcp_client = await get_mcp_client()
+        print("Lay duoc mcp client")
         params = {
             "x_data": x_data,
             "y_data": y_data,
@@ -64,7 +66,7 @@ async def draw_bar_chart(x_data: List[Union[str, int, float]], y_data: dict[str,
         tool_name = "draw_bar_chart"
 
         result = await mcp_client.process_query(tool_name, params=params)
-
+        print("Thuc hien xong ve chart")
         return result
     except Exception as e:
         print(f"Exception when call tool draw bar chart {e}")

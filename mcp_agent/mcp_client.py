@@ -54,7 +54,7 @@ class MCPClient:
         self._streams_context = None
 
     async def process_query(self, query: str, params: dict = None) -> str:
-
+        print("Da vao session call tool")
         result = await self.session.call_tool(query, params)
 
         return result
@@ -65,9 +65,11 @@ mcp_client = None
 
 async def get_mcp_client():
     global mcp_client
+    print(f"bien mcp global luc nay la: ", mcp_client)
     if mcp_client is None:
         mcp_client = MCPClient()
         await mcp_client.connect_to_sse_server(server_url="http://localhost:8000/sse")
+    print(f"bien mcp global sau if la: ", mcp_client)
     return mcp_client
 
 async def delete_mcp_client():
@@ -75,5 +77,6 @@ async def delete_mcp_client():
     if mcp_client is not None:
         await mcp_client.cleanup()
         mcp_client = None
+    print(f"mcp sau khi delete la: ", mcp_client)
 
 
