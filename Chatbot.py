@@ -150,11 +150,9 @@ def handle_yes_click():
                 # st.markdown("📊 Your chart:")
                 # st.image(bot_response, use_container_width=True)
                 st.session_state.chart_data = st.session_state.get("chart_data", []) + [bot_response]
-            elif isinstance(bot_response, str):
+            elif isinstance(bot_response, dict):
                 try:
-                    df = pd.DataFrame(json.loads(bot_response))
-                    st.markdown("📋 Your table:")
-                    st.dataframe(df)
+                    df = pd.DataFrame(bot_response)
                     st.session_state.table_data = st.session_state.get("table_data", []) + [df]
                     bot_response = df
                 except Exception as e:
@@ -206,10 +204,15 @@ if st.session_state.waiting_confirmation == True:
 user_input = st.chat_input("Send a request to the chatbot")
 
 if user_input and not st.session_state.get("waiting_confirmation", False):
-    state, next_action = run_async(ask_agent, agent, user_input, thread)
+    result = run_async(ask_agent, agent, user_input, thread)
     display_message(user_input, "user")
 
-    if next_action == "confirm":
+    is_confirm = (len(result) == 2)
+    is_end = (len(result) == 4)
+
+    if is_confirm:
+        print("This is confirm")
+        state, _ = result
         st.session_state.waiting_confirmation = True
         st.session_state.last_user_input = user_input
         st.session_state.current_state = state
@@ -223,30 +226,29 @@ if user_input and not st.session_state.get("waiting_confirmation", False):
         with col2:
             st.button("❌ No, cancel!", on_click=handle_no_click, key="no_button")
 
-    elif next_action == "end":
-        result = run_async(ask_agent, agent, user_input, thread, state)
-        if isinstance(result, tuple) and len(result) == 4:
-            bot_message, bot_response, response, _ = result
+    elif is_end:
+        bot_message, bot_response, response, _ = result
+        print("This is end")
 
-            if isinstance(bot_response, Image.Image):
-                st.markdown("📊 Your chart:")
-                st.image(bot_response, use_container_width=True)
-                st.session_state.chart_data = st.session_state.get("chart_data", []) + [bot_response]
+        if isinstance(bot_response, Image.Image):
+            st.markdown("📊 Your chart:")
+            st.image(bot_response, use_container_width=True)
+            st.session_state.chart_data = st.session_state.get("chart_data", []) + [bot_response]
 
-            elif isinstance(bot_response, str):
-                try:
-                    df = pd.DataFrame(json.loads(bot_response))
-                    st.markdown("📋 Your table:")
-                    st.dataframe(df)
-                    st.session_state.table_data = st.session_state.get("table_data", []) + [df]
-                    bot_response = df
-                except Exception:
-                    pass
+        elif isinstance(bot_response, dict):
+            try:
+                df = pd.DataFrame(bot_response)
+                st.markdown("📋 Your table:")
+                st.dataframe(df)
+                st.session_state.table_data = st.session_state.get("table_data", []) + [df]
+                bot_response = df
+            except Exception:
+                pass
 
-            display_message(bot_message, "bot")
-            st.session_state.chat_history.append((user_input, bot_response, bot_message))
-        else:
-            display_message("⚠️ Something went wrong after action.", "bot")
+        display_message(bot_message, "bot")
+        st.session_state.chat_history.append((user_input, bot_response, bot_message))
+    else:
+        display_message("⚠️ Something went wrong after action.", "bot")
 
 # --- Reset Sidebar Flag ---
 st.session_state.sidebar_updated = False

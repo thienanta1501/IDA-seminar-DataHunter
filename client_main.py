@@ -32,11 +32,20 @@ def get_json_string_sql_result(input_json_string):
     
     return None
 
+def convert_list_of_dict(list_of_dict):
+    result = {}
+
+    for item in list_of_dict:
+        for key, value in item.items():
+            result.setdefault(key, []).append(value)
+
+    return result
+
 def handle_json_result(returned_content):
     json_string = get_json_string_sql_result(returned_content)
     result = json.loads(json_string)
+    result = convert_list_of_dict(result)
     return result
-
 
 def get_url_from_str(input_string):
     print("Da vao get url")
