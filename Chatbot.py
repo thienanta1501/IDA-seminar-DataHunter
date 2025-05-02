@@ -117,6 +117,9 @@ def display_message(message, sender):
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+if "waiting_confirmation" not in st.session_state:
+    st.session_state.waiting_confirmation = False
+
 for user, bot, bot_mess in st.session_state.chat_history:
     display_message(user, "user")
     if isinstance(bot, pd.DataFrame):
@@ -137,8 +140,6 @@ def run_async(func, *args):
 def handle_yes_click():
     try:
         new_state = handle_user_accept_tool("yes", st.session_state.current_state)
-        print(f"Chui vao yes")
-        print(type(st.session_state.current_state))
         
         result = run_async(ask_agent, agent, st.session_state.last_user_input, thread, new_state)
         
@@ -158,27 +159,20 @@ def handle_yes_click():
                     bot_response = df
                 except Exception as e:
                     st.write(f"Error processing response: {e}")
+            st.session_state.waiting_confirmation = False
             
             # display_message(bot_message, "bot")
-            st.session_state.chat_history.append((st.session_state.last_user_input, bot_response, bot_message))
+            new_value = (st.session_state.last_user_input, bot_response, bot_message)
+            st.session_state.chat_history.pop()
+            st.session_state.chat_history.append(new_value)
         elif isinstance(result, tuple) and len(result) == 2:
+            state, flag = result
             st.session_state.waiting_confirmation = True
-            st.session_state.last_user_input = user_input
             st.session_state.current_state = state
-            st.warning("⚠️ The assistant wants to use a tool. Do you allow it?")
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.button("✅ Yes, proceed!", on_click=handle_yes_click, key="yes_button")
-
-            with col2:
-                st.button("❌ No, cancel!", on_click=handle_no_click, key="no_button")
         else:
             display_message("⚠️ Something went wrong after confirmation.", "bot")
     except Exception as e:
         st.write(f"Error in handle_yes_click: {e}")
-    finally:
-        st.session_state.waiting_confirmation = False
 
 def handle_no_click():
     try:
@@ -189,6 +183,7 @@ def handle_no_click():
         if isinstance(result, tuple) and len(result) == 4:
             bot_response, _, _, _ = result
             # display_message(bot_response, "bot")
+            st.session_state.chat_history.pop()
             st.session_state.chat_history.append((st.session_state.last_user_input, None, bot_response))
         else:
             display_message("⚠️ Something went wrong after rejection.", "bot")
@@ -196,6 +191,16 @@ def handle_no_click():
         st.write(f"Error in handle_no_click: {e}")
     finally:
         st.session_state.waiting_confirmation = False
+
+if st.session_state.waiting_confirmation == True:
+    st.warning("⚠️ The assistant wants to use a tool. Do you allow it?")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.button("✅ Yes, proceed!", on_click=handle_yes_click, key="yes_button")
+
+    with col2:
+        st.button("❌ No, cancel!", on_click=handle_no_click, key="no_button")
 
 # --- Xử lý chat ---
 user_input = st.chat_input("Send a request to the chatbot")
@@ -210,6 +215,7 @@ if user_input and not st.session_state.get("waiting_confirmation", False):
         st.session_state.current_state = state
         st.warning("⚠️ The assistant wants to use a tool. Do you allow it?")
         col1, col2 = st.columns(2)
+        st.session_state.chat_history.append((user_input, None, None))
 
         with col1:
             st.button("✅ Yes, proceed!", on_click=handle_yes_click, key="yes_button")
