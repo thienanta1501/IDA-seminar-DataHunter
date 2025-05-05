@@ -167,6 +167,7 @@ def handle_yes_click():
             state, flag = result
             st.session_state.waiting_confirmation = True
             st.session_state.current_state = state
+            st.session_state.tool_name = state.values["messages"][-1].tool_calls[0]["name"]
         else:
             display_message("⚠️ Something went wrong after confirmation.", "bot")
     except Exception as e:
@@ -191,7 +192,7 @@ def handle_no_click():
         st.session_state.waiting_confirmation = False
 
 if st.session_state.waiting_confirmation == True:
-    st.warning("⚠️ The assistant wants to use a tool. Do you allow it?")
+    st.warning(f"⚠️ The assistant wants to use '{st.session_state.tool_name}'. Do you allow it?")
     col1, col2 = st.columns(2)
 
     with col1:
@@ -204,8 +205,8 @@ if st.session_state.waiting_confirmation == True:
 user_input = st.chat_input("Send a request to the chatbot")
 
 if user_input and not st.session_state.get("waiting_confirmation", False):
-    result = run_async(ask_agent, agent, user_input, thread)
     display_message(user_input, "user")
+    result = run_async(ask_agent, agent, user_input, thread)
 
     is_confirm = (len(result) == 2)
     is_end = (len(result) == 4)
@@ -213,10 +214,11 @@ if user_input and not st.session_state.get("waiting_confirmation", False):
     if is_confirm:
         print("This is confirm")
         state, _ = result
+        st.session_state.tool_name = state.values["messages"][-1].tool_calls[0]["name"]
         st.session_state.waiting_confirmation = True
         st.session_state.last_user_input = user_input
         st.session_state.current_state = state
-        st.warning("⚠️ The assistant wants to use a tool. Do you allow it?")
+        st.warning(f"⚠️ The assistant wants to use '{st.session_state.tool_name}'. Do you allow it?")
         col1, col2 = st.columns(2)
         st.session_state.chat_history.append((user_input, None, None))
 
