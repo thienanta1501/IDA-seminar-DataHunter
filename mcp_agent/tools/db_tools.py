@@ -3,7 +3,7 @@
 This module provides LangChain tools that interface with the MCP Server's
 database tools.
 """
-SAVE_PATH_FILE = "/home/haiimphuong/project/python-sdk/src/mcp/server/mcp_agent/tools"
+SAVE_PATH_FILE = r"D:\DA_Project_New\IDA-seminar-DataHunter\mcp_agent\tools"
 
 
 import json
@@ -103,7 +103,7 @@ async def sql_tool(query: str) -> str:
                 # Construct the file path
                   # Replace with actual path
                 file_path = os.path.join(SAVE_PATH_FILE, f"result_{random_string}.csv")
-                
+                print(file_path)
                 # Ensure the directory exists
                 os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 

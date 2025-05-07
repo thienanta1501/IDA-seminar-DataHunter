@@ -43,8 +43,10 @@ def convert_list_of_dict(list_of_dict):
 
 def handle_json_result(returned_content):
     json_string = get_json_string_sql_result(returned_content)
-    result = json.loads(json_string)
-    result = convert_list_of_dict(result)
+    result = None
+    if json_string:
+        result = json.loads(json_string)
+        result = convert_list_of_dict(result)
     return result
 
 def get_url_from_str(input_string):
@@ -125,6 +127,8 @@ async def ask_agent(agent, input_prompt: str , thread, new_state = None):
     
     last_message, last_tool_message = get_last_tool_message_and_last_ai_message(response)
     bot_response = last_message.content
+
+    print(last_tool_message)
 
 
     tool_result = None
