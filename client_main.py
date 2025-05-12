@@ -8,6 +8,7 @@ import requests
 from PIL import Image
 import io
 import json
+import pandas as pd
 
 load_dotenv(dotenv_path="mcp_agent/.env")
     
@@ -41,12 +42,23 @@ def convert_list_of_dict(list_of_dict):
 
     return result
 
+def extract_filepath(text):
+    match = re.search(r'path\s+([A-Z]:\\[^\s,]+)', text)
+    if match:
+        return match.group(1)
+    return None
+
 def handle_json_result(returned_content):
     json_string = get_json_string_sql_result(returned_content)
     result = None
     if json_string:
         result = json.loads(json_string)
         result = convert_list_of_dict(result)
+    else:
+        file_path = extract_filepath(returned_content)
+        df = pd.read_csv(file_path)
+        result = df.to_dict(orient='list')
+
     return result
 
 def get_url_from_str(input_string):
