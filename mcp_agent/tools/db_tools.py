@@ -3,7 +3,7 @@
 This module provides LangChain tools that interface with the MCP Server's
 database tools.
 """
-SAVE_PATH_FILE = r"D:\DA_Project_New\IDA-seminar-DataHunter\mcp_agent\tools"
+SAVE_PATH_FILE = r"C:\Users\Admin\OneDrive - VNU-HCMUS\WORKSPACE\US\2024-2025_3-Junior\Semester-2\IDA\IDA-seminar-DataHunter\report_analysis"
 
 
 import json

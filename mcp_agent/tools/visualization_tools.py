@@ -240,6 +240,7 @@ async def draw_line_chart(file_path: str, x_column: str, y_column: str, label_co
         file_path (str): Path to the CSV file containing the data.
         x_column (str): The name of the column to be used for the x-axis.
         y_column (str): A column name to be used for the y-axis.
+        label_column(str): A column name to set label for line chart. Default to "".
         title (str, optional): 
             Title of the chart.
         x_label (str, optional): 
@@ -266,12 +267,17 @@ async def draw_line_chart(file_path: str, x_column: str, y_column: str, label_co
         mcp_client = await get_mcp_client()
         df = pd.read_csv(file_path)
         x_data = df[x_column].unique().tolist()
-        labels = df[label_column].unique().tolist()
+        print(x_data)
+        if label_column != "":
+            labels = df[label_column].unique().tolist()
+        else:
+            labels = []
+        
         y_data= {}
 
         for label in labels:
             y_data[label] = [0 for i in range(len(x_data))]
-        
+
         index_map = {}
 
         for i in range(len(x_data)):
@@ -282,6 +288,9 @@ async def draw_line_chart(file_path: str, x_column: str, y_column: str, label_co
 
             for index, row in label_df.iterrows():
                 y_data[label][index_map[row[x_column]]] = row[y_column]
+        
+        if len(labels) == 0:
+            y_data["value"] = df[y_column].tolist()
 
         tool_name = "draw_line_chart"
         params = {
@@ -297,7 +306,7 @@ async def draw_line_chart(file_path: str, x_column: str, y_column: str, label_co
             "scalex": scalex,
             "scaley": scaley
         }
-
+        print("Call line chart agent")
         result = await mcp_client.process_query(tool_name, params=params)
         return result
     except Exception as e:
