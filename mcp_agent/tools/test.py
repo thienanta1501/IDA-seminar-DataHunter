@@ -528,43 +528,43 @@ def generate_html_report(
         print(f"Error writing HTML file: {e}")
 
 
-# --- Example Usage ---
-if __name__ == "__main__":
-    # Create dummy data (same as before)
-    data = {
-        'ID': range(1, 101),
-        'Age': np.random.randint(20, 60, 100),
-        'Gender': np.random.choice(['Male', 'Female', 'Other', None], 100, p=[0.45, 0.45, 0.04, 0.06]), # Added None
-        'Income': np.random.normal(50000, 15000, 100).clip(10000),
-        'Experience': np.random.randint(0, 30, 100),
-        'Education': np.random.choice(['High School', 'Bachelor', 'Master', 'PhD', None], 100, p=[0.3, 0.4, 0.15, 0.05, 0.1]),
-        'JoiningDate': pd.to_datetime(np.random.randint(pd.Timestamp('2010-01-01').value//10**9, pd.Timestamp('2023-12-31').value//10**9, 100), unit='s'),
-        'Satisfaction': np.random.randint(1, 6, 100), # Treat as categorical initially
-        'VerySkewed': np.random.exponential(1, 100) * 1000,
-        'LowVarianceNum': np.random.choice([1.0, 1.001], 100, p=[0.9, 0.1]),
-        'ConstantCat': ['A'] * 100,
-        'HighMissing': [np.nan] * 80 + list(np.random.rand(20)),
-        'Target': np.random.choice([0, 1], 100) # Binary target
-    }
-    dummy_df_initial = pd.DataFrame(data)
-    dummy_df_initial.loc[5:10, 'Income'] = np.nan
-    dummy_df_initial.loc[15, 'Gender'] = np.nan
-    dummy_df_initial.loc[20:25, 'Experience'] = 300 # Outliers handled by boxplot vis
+# # --- Example Usage ---
+# if __name__ == "__main__":
+#     # Create dummy data (same as before)
+#     data = {
+#         'ID': range(1, 101),
+#         'Age': np.random.randint(20, 60, 100),
+#         'Gender': np.random.choice(['Male', 'Female', 'Other', None], 100, p=[0.45, 0.45, 0.04, 0.06]), # Added None
+#         'Income': np.random.normal(50000, 15000, 100).clip(10000),
+#         'Experience': np.random.randint(0, 30, 100),
+#         'Education': np.random.choice(['High School', 'Bachelor', 'Master', 'PhD', None], 100, p=[0.3, 0.4, 0.15, 0.05, 0.1]),
+#         'JoiningDate': pd.to_datetime(np.random.randint(pd.Timestamp('2010-01-01').value//10**9, pd.Timestamp('2023-12-31').value//10**9, 100), unit='s'),
+#         'Satisfaction': np.random.randint(1, 6, 100), # Treat as categorical initially
+#         'VerySkewed': np.random.exponential(1, 100) * 1000,
+#         'LowVarianceNum': np.random.choice([1.0, 1.001], 100, p=[0.9, 0.1]),
+#         'ConstantCat': ['A'] * 100,
+#         'HighMissing': [np.nan] * 80 + list(np.random.rand(20)),
+#         'Target': np.random.choice([0, 1], 100) # Binary target
+#     }
+#     dummy_df_initial = pd.DataFrame(data)
+#     dummy_df_initial.loc[5:10, 'Income'] = np.nan
+#     dummy_df_initial.loc[15, 'Gender'] = np.nan
+#     dummy_df_initial.loc[20:25, 'Experience'] = 300 # Outliers handled by boxplot vis
 
-    # --- Generate the Report ---
-    output_file = "/home/haiimphuong/data_analysis_report.html"
-    generate_html_report(
-        dummy_df_initial,
-        output_html_file=output_file,
-        id_cols=['ID'],
-        cat_threshold=20, # Make Satisfaction categorical
-        report_title="Analysis Report for Dummy Dataset"
-    )
+#     # --- Generate the Report ---
+#     output_file = "/home/haiimphuong/data_analysis_report.html"
+#     generate_html_report(
+#         dummy_df_initial,
+#         output_html_file=output_file,
+#         id_cols=['ID'],
+#         cat_threshold=20, # Make Satisfaction categorical
+#         report_title="Analysis Report for Dummy Dataset"
+#     )
 
-    # Optional: Clean up dummy file if created from path
-    # import os
-    # try:
-    #     os.remove(dummy_file)
-    #     print(f"\nRemoved dummy data file: {dummy_file}")
-    # except OSError as e:
-    #     print(f"Error removing dummy file: {e}")
+#     # Optional: Clean up dummy file if created from path
+#     # import os
+#     # try:
+#     #     os.remove(dummy_file)
+#     #     print(f"\nRemoved dummy data file: {dummy_file}")
+#     # except OSError as e:
+#     #     print(f"Error removing dummy file: {e}")

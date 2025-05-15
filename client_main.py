@@ -43,6 +43,7 @@ def convert_list_of_dict(list_of_dict):
     return result
 
 def extract_filepath(text):
+    print("Extracting file path from text")
     match = re.search(r'path\s+([A-Z]:\\[^\s,]+)', text)
     if match:
         return match.group(1)
