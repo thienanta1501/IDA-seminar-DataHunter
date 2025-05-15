@@ -15,8 +15,7 @@ from pydantic import BaseModel, Field
 from mcp_server.tools.db_tools import get_db_structure, sql_tool
 from mcp_server.tools.ml_tools import build_ml_model
 from mcp_server.tools.python_tools import python_execute_tool
-
-
+from mcp_server.tools.stats_tools import generate_html_report
 from mcp_server.tools.visualization_tools import draw_bar_chart, draw_barh_chart, draw_boxplot_chart, \
 draw_hist_chart, draw_line_chart, draw_pie_chart, draw_scatter_chart, draw_pearson_correlation_chart
 
@@ -112,6 +111,12 @@ class DataServer:
         self.server.add_tool(
             build_ml_model,
             name="build_ml_model",
+        )
+
+        # Statistic tool
+        self.server.add_tool(
+            generate_html_report,
+            name="generate_html_report"
         )
 
 

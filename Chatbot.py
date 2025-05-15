@@ -8,6 +8,48 @@ from agent import agent, thread
 import asyncio
 import io
 import json
+from mcp_agent.agent_gemini import DataAgentGraph
+from langchain_google_genai import ChatGoogleGenerativeAI
+# from langchain.chat_models import ChatOpenAI
+
+# --- Trang chọn cấu hình model ---
+# if "model_configured" not in st.session_state or not st.session_state.model_configured:
+#     st.title("🔧 Model Configuration")
+#     st.subheader("Chọn loại model và cấu hình")
+
+#     model_type = st.selectbox("Chọn loại model", ["GPT", "Gemini"])
+#     model_name = st.text_input("Nhập tên model (VD: gpt-4, gemini-pro)", value="gpt-4")
+#     api_key = st.text_input("Nhập API key", type="password")
+
+#     if st.button("✅ Xác nhận cấu hình"):
+#         if not model_name or not api_key:
+#             st.warning("⚠️ Vui lòng nhập đầy đủ thông tin!")
+#         else:
+#             st.session_state.model_type = model_type
+#             st.session_state.model_name = model_name
+#             st.session_state.api_key = api_key
+#             st.session_state.model_configured = True
+#             st.experimental_rerun()  # Load lại giao diện chính sau khi xác nhận
+#     st.stop()  # Dừng app ở đây nếu chưa cấu hình
+
+# if st.session_state.model_type == "Gemini":
+#     llm = ChatGoogleGenerativeAI(
+#         model=st.session_state.model_name,
+#         temperature=0.0,
+#         google_api_key=st.session_state.api_key
+#     )
+# else:
+#     llm = ChatOpenAI(
+#     model_name=st.session_state.model_name, 
+#     temperature=0.0,
+#     openai_api_key=st.session_state.api_key  
+# )
+
+
+# server_url="http://localhost:8000/sse"
+# agent = DataAgentGraph(llm=llm, server_url=server_url)
+# thread = {"configurable": {"thread_id": "1"}}
+
 
 # --- Cấu hình giao diện chính ---
 st.set_page_config(page_title="Chatbot", page_icon="💬", layout="wide")

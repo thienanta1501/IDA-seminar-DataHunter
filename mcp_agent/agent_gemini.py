@@ -28,6 +28,7 @@ from mcp_agent.mcp_client import MCPClient
 from mcp_agent.tools.db_tools import get_db_structure, sql_tool
 from mcp_agent.tools.visualization_tools import draw_barh_chart, draw_boxplot_chart, \
 draw_hist_chart, draw_line_chart, draw_pie_chart, draw_scatter_chart, draw_pearson_correlation_chart, draw_bar_chart
+from mcp_agent.tools.stats_tool import generate_html_report
 from mcp_agent.mock_test_agent import mock_build_ml_model, mock_get_db_structure, mock_sql_tool, mock_visualize_tool
 from uuid import uuid4
 # --- Removed Database Setup for Chat History ---
@@ -110,7 +111,8 @@ class DataAgentGraph:
             draw_pie_chart,
             draw_scatter_chart,
             draw_pearson_correlation_chart,
-            draw_bar_chart
+            draw_bar_chart,
+            generate_html_report
         ]
 
     # --- Graph Nodes ---
@@ -411,8 +413,6 @@ class DataAgentGraph:
             self.route_after_planning,
             {"execute_tool": "execute_tool", END: END}
         )
-
-
 
         # After ToolNode executes, check if it was SQL and update state
         workflow.add_edge("execute_tool", "check_sql_success")
