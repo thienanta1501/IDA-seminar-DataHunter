@@ -208,13 +208,6 @@ class DataAgentGraph:
                             * If the user asks for visualization or ML *without* prior data retrieval, you **MUST** first plan and execute an `sql_tool` call to get the necessary data. Ask clarifying questions if the required data isn't obvious.
                             * Break down complex requests into logical steps.
                             * When you decide to use a tool, the user will be asked for confirmation before it runs. Explain clearly why you are choosing a specific tool and what arguments you plan to use.
-                            * When using visualize_tool, the system will receive a URL pointing to the generated visualization image.
-                            * You MUST NOT mention or include the raw URL directly in the message to the user.
-                            * Instead, summarize the visualization content (e.g., "Here is the sales trend over time" or "The chart below shows customer segments") and trust that the client app will handle displaying the image.
-                            * Focus on explaining the insights or observations that the user can infer from the visualization.
-                            * After using sql_tool, you MUST NOT print or include the raw data records retrieved in the user-facing message.
-                            * Instead, confirm that the data retrieval was successful, and briefly describe what type of data was fetched (e.g., "I have retrieved customer purchase records" or "Sales data for Q1 has been successfully retrieved.").
-                            * You can mention the number of records or columns retrieved if it helps the user understand the result, but never display the raw data unless the user explicitly asks for it.
 
                             Based on the latest user message and the conversation history (including tool results), decide the next single action. This could be:
                             - Calling ONE tool (e.g., `sql_tool`, `visualize_tool`, `build_ml_model`).

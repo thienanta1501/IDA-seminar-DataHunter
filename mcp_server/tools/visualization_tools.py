@@ -4,6 +4,7 @@ This module provides tools for generating visualizations using Matplotlib.
 """
 
 import base64
+from csv import Error
 import io
 from typing import Any, Dict, List, Optional, Union
 
@@ -106,12 +107,16 @@ def draw_hist_chart(category: Optional[Dict[str, List[Union[int, float]]]] = Non
 def draw_line_chart(x_data: List[Union[str, int, float]] , y_data: Dict[Union[str], List[Union[float, int]]], title: str = "", x_label: str = "", y_label: str = "",
                     linestyle: str = "-", linewidth: float = 2, marker: Optional[str] = None,
                     color: Optional[str] = None, scalex: bool = True, scaley: bool = True) -> str:
-    chart = LineChart(
-        title=title, x_label=x_label, y_label=y_label,
-        linestyle=linestyle, linewidth=linewidth, marker=marker,
-        color=color, scalex=scalex, scaley=scaley
-    )
-    fig = chart.create_chart(x_data=x_data, y_data=y_data)
+    try:
+        chart = LineChart(
+            title=title, x_label=x_label, y_label=y_label,
+            linestyle=linestyle, linewidth=linewidth, marker=marker,
+            color=color, scalex=scalex, scaley=scaley
+        )
+        print("Vao create chart")
+        fig = chart.create_chart(x_data=x_data, y_data=y_data)
+    except Exception as e:
+        raise Exception(f"{e}")
 
     buf = io.BytesIO()
     fig.savefig(buf, format="png")

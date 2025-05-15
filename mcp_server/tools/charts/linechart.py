@@ -18,6 +18,7 @@ class LineChart:
     def create_chart(self, x_data: list, y_data: dict):
         fig, ax = plt.subplots()
         labels = list(y_data.keys())
+        print(labels)
 
         colors = cycle(['b', 'g', 'r', 'c', 'm', 'y', 'k']) 
 
