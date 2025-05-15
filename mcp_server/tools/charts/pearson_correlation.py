@@ -26,4 +26,6 @@ class PearsonCorrelation:
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45, fontsize=10 ,ha='right')
         ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
 
+        fig.tight_layout()
+
         return fig

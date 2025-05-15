@@ -36,4 +36,6 @@ class ScatterChart:
         if self.title:
             ax.set_title(self.title)
 
+        fig.tight_layout()
+
         return fig

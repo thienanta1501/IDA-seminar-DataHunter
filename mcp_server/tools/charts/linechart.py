@@ -28,7 +28,11 @@ class LineChart:
         ax.set_xlabel(self.x_label)
         ax.set_ylabel(self.y_label)
 
+        ax.xaxis.set_tick_params(rotation=90)
+
         if len(labels) > 1:
             ax.legend()
+
+        fig.tight_layout()
 
         return fig

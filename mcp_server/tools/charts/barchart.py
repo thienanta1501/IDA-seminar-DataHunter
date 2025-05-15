@@ -57,4 +57,6 @@ class BarChart:
         ax.set_ylabel(self.y_label)
         ax.legend()
 
+        fig.tight_layout()
+
         return fig

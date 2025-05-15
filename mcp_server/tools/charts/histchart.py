@@ -62,4 +62,6 @@ class HistChart:
         ax.set_xlabel(self.x_label)
         ax.set_ylabel(self.y_label)
 
+        fig.tight_layout()
+
         return fig
