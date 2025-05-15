@@ -17,6 +17,7 @@ import os
 #import aiohttp
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
+import re
 from mcp_agent.mcp_client import get_mcp_client
 # --- Converted Function: get_db_structure ---
 async def get_db_structure() -> str:
@@ -43,6 +44,13 @@ async def get_db_structure() -> str:
         print(f"Error in get_db_structure tool: {type(e).__name__} - {e}")
         # Return an informative error message string
         return f"Error retrieving database structure: {type(e).__name__} - {e}"
+
+
+def handle_json(dirty_json: str):
+    dirty_str = re.sub(r"Timestamp\('([\d\-:\s]+)'\)", r'"\1"', dirty_json)
+    dirty_str = dirty_str.replace('NaT', 'null')
+    dirty_str = dirty_str.replace("'", '"')
+    return dirty_str
 
 
 # --- Converted Function: sql_tool ---
@@ -79,10 +87,11 @@ async def sql_tool(query: str) -> str:
             print(f"   Result snippet (str): {result[:500]}{'...' if len(result) > 500 else ''}")
         elif isinstance(result, (list, dict)):
             # Convert complex types to string for logging snippet
+            print(f"Result is a list or dict")
             result_str_snippet = str(result)
             print(f"   Result snippet (list/dict): {result_str_snippet[:500]}{'...' if len(result_str_snippet) > 500 else ''}")
         else:
-            ###print(f"   Result (other type): {result}")
+            print(f"   Result (other type)")
             result = parse_call_tool_result(result=result)
             print(result)
 
@@ -160,7 +169,10 @@ def parse_call_tool_result(result: Any) -> List[Dict]:
             if not hasattr(content_item, 'text'):
                 raise ValueError("Content item does not have a 'text' attribute")
             try:
-                parsed_dict = json.loads(content_item.text)
+                str_json = content_item.text
+                cleaned_json = handle_json(str_json)
+                    
+                parsed_dict = json.loads(cleaned_json)
                 result_list.append(parsed_dict)
             except json.JSONDecodeError as e:
                 raise ValueError(f"Failed to parse JSON from text: {content_item.text}. Error: {e}")
